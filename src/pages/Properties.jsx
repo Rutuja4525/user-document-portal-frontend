@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { useToast } from "../context/ToastContext";
 import { 
     getProperties, createProperty, updateProperty, deleteProperty,
     getPropertyDocuments, uploadPropertyDocument, deleteDocument, downloadDocument
@@ -12,6 +13,7 @@ import {
 
 function Properties() {
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+    const { showToast } = useToast();
     
     // Core property list state from DB
     const [properties, setProperties] = useState([]);
@@ -83,9 +85,10 @@ function Properties() {
             setShowAddModal(false);
             resetForm();
             fetchProperties();
+            showToast("Property listing created successfully!", "success");
         } catch (err) {
             console.error("Failed to create property", err);
-            alert("Error creating property listing.");
+            showToast("Error creating property listing.", "error");
         }
     };
 
@@ -113,9 +116,10 @@ function Properties() {
             setShowEditModal(false);
             resetForm();
             fetchProperties();
+            showToast("Property updated successfully!", "success");
         } catch (err) {
             console.error("Failed to update property", err);
-            alert("Error updating property.");
+            showToast("Error updating property.", "error");
         }
     };
 
@@ -129,9 +133,10 @@ function Properties() {
             await deleteProperty(deleteId);
             setShowDeleteConfirm(false);
             fetchProperties();
+            showToast("Property deleted successfully!", "success");
         } catch (err) {
             console.error("Failed to delete property", err);
-            alert("Error deleting property listing.");
+            showToast("Error deleting property listing.", "error");
         }
     };
 
@@ -183,12 +188,13 @@ function Properties() {
                 // Refresh active property documents
                 const res = await getPropertyDocuments(activeProp.id);
                 setActivePropDocs(res.data);
+                showToast("Document uploaded successfully!", "success");
             }, 400);
         } catch (err) {
             clearInterval(progressInterval);
             setUploadingDoc(false);
             console.error("Document upload failed", err);
-            alert("Failed to upload document.");
+            showToast("Failed to upload document.", "error");
         }
     };
 
@@ -199,9 +205,10 @@ function Properties() {
             // Refresh active property documents
             const res = await getPropertyDocuments(activeProp.id);
             setActivePropDocs(res.data);
+            showToast("Document deleted successfully!", "success");
         } catch (err) {
             console.error("Failed to delete document", err);
-            alert("Failed to delete document.");
+            showToast("Failed to delete document.", "error");
         }
     };
 
@@ -210,7 +217,7 @@ function Properties() {
             await downloadDocument(docId, name);
         } catch (err) {
             console.error("Failed to download file", err);
-            alert("Failed to download document. Your session might have expired.");
+            showToast("Failed to download document. Your session might have expired.", "error");
         }
     };
 

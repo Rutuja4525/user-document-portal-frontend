@@ -2,11 +2,13 @@ import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { loginUser, googleLoginUser } from "../services/authService";
 import { useAuth } from "../context/AuthContext";
+import { useToast } from "../context/ToastContext";
 import { FaEnvelope, FaLock, FaEye, FaEyeSlash } from "react-icons/fa";
 
 function Login() {
     const { login, isAuthenticated } = useAuth();
     const navigate = useNavigate();
+    const { showToast } = useToast();
 
     const [formData, setFormData] = useState({
         email: "",
@@ -101,10 +103,13 @@ function Login() {
         try {
             const response = await loginUser(formData);
             login(response.data);
+            showToast("Welcome back! Logged in successfully.", "success");
             navigate("/dashboard");
         } catch (err) {
             console.error("Login Error:", err);
-            setError(err.response?.data?.message || "Invalid email or password. Please try again.");
+            const errMsg = err.response?.data?.message || "Invalid email or password. Please try again.";
+            setError(errMsg);
+            showToast(errMsg, "error");
         } finally {
             setLoading(false);
         }
@@ -112,7 +117,7 @@ function Login() {
 
     const handleForgotPassword = (e) => {
         e.preventDefault();
-        alert("Password reset instructions have been sent to your email (if registered).");
+        showToast("Password reset instructions have been sent to your email (if registered).", "info");
     };
 
     return (

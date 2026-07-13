@@ -2,11 +2,13 @@ import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { registerUser, googleLoginUser } from "../services/authService";
 import { useAuth } from "../context/AuthContext";
+import { useToast } from "../context/ToastContext";
 import { FaUser, FaEnvelope, FaPhone, FaLock, FaUserCheck, FaEye, FaEyeSlash } from "react-icons/fa";
 
 function Register() {
     const { login, isAuthenticated } = useAuth();
     const navigate = useNavigate();
+    const { showToast } = useToast();
 
     const [formData, setFormData] = useState({
         firstName: "",
@@ -139,6 +141,7 @@ function Register() {
 
         if (formData.password !== formData.confirmPassword) {
             setError("Passwords do not match!");
+            showToast("Passwords do not match!", "error");
             return;
         }
 
@@ -153,13 +156,17 @@ function Register() {
                 password: formData.password,
                 role: formData.role
             });
-            setSuccess("Account registered successfully! Redirecting to login...");
+            const successMsg = "Account registered successfully! Redirecting to login...";
+            setSuccess(successMsg);
+            showToast(successMsg, "success");
             setTimeout(() => {
                 navigate("/login");
             }, 2000);
         } catch (err) {
             console.error("Registration Error:", err);
-            setError(err.response?.data?.message || "Something went wrong during registration. Please try again.");
+            const errMsg = err.response?.data?.message || "Something went wrong during registration. Please try again.";
+            setError(errMsg);
+            showToast(errMsg, "error");
         } finally {
             setLoading(false);
         }

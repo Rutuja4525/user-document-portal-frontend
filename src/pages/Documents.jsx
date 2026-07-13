@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { useToast } from "../context/ToastContext";
 import { 
     getProperties, getAllDocuments, uploadPropertyDocument, deleteDocument, downloadDocument 
 } from "../services/propertyService";
@@ -10,6 +11,7 @@ import {
 
 function Documents() {
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+    const { showToast } = useToast();
     
     // Core states linked to API
     const [documents, setDocuments] = useState([]);
@@ -74,7 +76,7 @@ function Documents() {
 
     const triggerUpload = async (file) => {
         if (!selectedPropertyId) {
-            alert("Please add a property first and select it to upload documents.");
+            showToast("Please add a property first and select it to upload documents.", "warning");
             return;
         }
 
@@ -93,12 +95,13 @@ function Documents() {
                 setUploadProgress(0);
                 setUploadFile(null);
                 refreshDocuments();
+                showToast("Document uploaded successfully!", "success");
             }, 400);
         } catch (err) {
             clearInterval(progressInterval);
             setUploading(false);
             console.error("Upload failed", err);
-            alert("Failed to upload document.");
+            showToast("Failed to upload document.", "error");
         }
     };
 
@@ -112,7 +115,7 @@ function Documents() {
             const file = e.dataTransfer.files[0];
             const name = file.name.toLowerCase();
             if (!name.endsWith(".pdf") && !name.endsWith(".doc") && !name.endsWith(".docx")) {
-                alert("Only PDF (.pdf) and Word (.doc, .docx) documents are allowed.");
+                showToast("Only PDF (.pdf) and Word (.doc, .docx) documents are allowed.", "error");
                 return;
             }
             triggerUpload(file);
@@ -125,7 +128,7 @@ function Documents() {
             const file = e.target.files[0];
             const name = file.name.toLowerCase();
             if (!name.endsWith(".pdf") && !name.endsWith(".doc") && !name.endsWith(".docx")) {
-                alert("Only PDF (.pdf) and Word (.doc, .docx) documents are allowed.");
+                showToast("Only PDF (.pdf) and Word (.doc, .docx) documents are allowed.", "error");
                 return;
             }
             triggerUpload(file);
@@ -137,9 +140,10 @@ function Documents() {
         try {
             await deleteDocument(id);
             refreshDocuments();
+            showToast("Document deleted successfully!", "success");
         } catch (err) {
             console.error("Failed to delete document", err);
-            alert("Failed to delete document.");
+            showToast("Failed to delete document.", "error");
         }
     };
 
@@ -148,7 +152,7 @@ function Documents() {
             await downloadDocument(docId, name);
         } catch (err) {
             console.error("Failed to download file", err);
-            alert("Failed to download document. Your session might have expired.");
+            showToast("Failed to download document. Your session might have expired.", "error");
         }
     };
 

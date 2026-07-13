@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
+import { ToastProvider } from "./context/ToastContext";
 
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
@@ -18,11 +19,12 @@ import Profile from "./pages/Profile";
 function App() {
   return (
     <AuthProvider>
-      <BrowserRouter>
+      <ToastProvider>
+        <BrowserRouter>
 
-        <Navbar />
+          <Navbar />
 
-        <div className="main-wrapper">
+          <div className="main-wrapper">
           <Routes>
 
             <Route path="/" element={<Home />} />
@@ -77,6 +79,7 @@ function App() {
         <Footer />
 
       </BrowserRouter>
+      </ToastProvider>
     </AuthProvider>
   );
 }
