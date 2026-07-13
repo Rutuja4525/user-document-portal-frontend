@@ -11,13 +11,10 @@ function Navbar() {
       <div className="container-fluid">
 
         <Link className="navbar-brand d-flex align-items-center gap-2" to="/">
-          <img 
-            src="/company-logo.png" 
-            alt="LogiPrime Logo" 
-            className="h-9 w-auto rounded-md border border-slate-200 bg-white p-0.5" 
-          />
           <span className="d-flex align-items-center gap-1.5">
-            <span className="text-slate-800 fw-bold fs-4">LogiPrime Solutions</span>
+            <span className="text-slate-800 fw-bold fs-4">
+              {user ? user.companyName : "DocUpload Portal"}
+            </span>
           </span>
         </Link>
 
@@ -47,11 +44,6 @@ function Navbar() {
                   </Link>
                 </li>
                 <li className="nav-item">
-                  <Link className={`nav-link px-3 d-flex align-items-center gap-1.5 ${location.pathname === "/properties" ? "text-primary fw-bold" : "text-slate-600"}`} to="/properties">
-                    <FaBuilding size={14} /> Properties
-                  </Link>
-                </li>
-                <li className="nav-item">
                   <Link className={`nav-link px-3 d-flex align-items-center gap-1.5 ${location.pathname === "/documents" ? "text-primary fw-bold" : "text-slate-600"}`} to="/documents">
                     <FaFileAlt size={14} /> Documents
                   </Link>
@@ -68,24 +60,7 @@ function Navbar() {
           <div className="d-flex align-items-center gap-3">
             {user ? (
               <>
-                {/* Search Bar */}
-                <div className="position-relative d-none d-lg-block" style={{ width: "200px" }}>
-                  <input 
-                    type="text" 
-                    placeholder="Search..." 
-                    className="form-control form-control-sm ps-4 pe-2 bg-slate-100 text-slate-800 border border-slate-200" 
-                    style={{ borderRadius: "20px", fontSize: "13px" }}
-                  />
-                  <FaSearch className="position-absolute text-slate-400" style={{ left: "12px", top: "50%", transform: "translateY(-50%)", fontSize: "11px" }} />
-                </div>
 
-                {/* Notifications */}
-                <button className="btn btn-link text-slate-600 p-1 position-relative" style={{ textDecoration: "none" }}>
-                  <FaBell size={18} />
-                  <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style={{ fontSize: "9px", padding: "3px 5px" }}>
-                    3
-                  </span>
-                </button>
 
                 {/* User Dropdown */}
                 <div className="dropdown">
@@ -98,12 +73,12 @@ function Navbar() {
                     style={{ textDecoration: "none" }}
                   >
                     <FaUserCircle size={24} className="text-slate-600" />
-                    <span className="small d-none d-sm-inline fw-semibold text-slate-700">{user.firstName}</span>
+                     <span className="small d-none d-sm-inline fw-semibold text-slate-700">{user.fullName}</span>
                   </button>
                   <ul className="dropdown-menu dropdown-menu-end shadow border border-slate-100 mt-2 p-2" aria-labelledby="userDropdown" style={{ borderRadius: "10px" }}>
                     <li className="px-3 py-1 border-bottom mb-1">
-                      <span className="fw-bold d-block small text-dark">{user.firstName} {user.lastName}</span>
-                      <span className="badge bg-primary text-white mt-1" style={{ fontSize: "9px" }}>{user.role}</span>
+                      <span className="fw-bold d-block small text-dark">{user.companyName}</span>
+                      <span className="badge bg-primary text-white mt-1" style={{ fontSize: "9px" }}>Company User</span>
                     </li>
                     <li>
                       <Link className="dropdown-item rounded small text-slate-700" to="/profile">My Profile</Link>

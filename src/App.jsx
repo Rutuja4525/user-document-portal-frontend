@@ -12,7 +12,6 @@ import Contact from "./pages/Contact";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
-import Properties from "./pages/Properties";
 import Documents from "./pages/Documents";
 import Profile from "./pages/Profile";
 
@@ -42,15 +41,6 @@ function App() {
               element={
                 <ProtectedRoute>
                   <Dashboard />
-                </ProtectedRoute>
-              } 
-            />
-
-            <Route 
-              path="/properties" 
-              element={
-                <ProtectedRoute>
-                  <Properties />
                 </ProtectedRoute>
               } 
             />

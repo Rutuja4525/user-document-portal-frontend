@@ -3,7 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { registerUser, googleLoginUser } from "../services/authService";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
-import { FaUser, FaEnvelope, FaPhone, FaLock, FaUserCheck, FaEye, FaEyeSlash } from "react-icons/fa";
+import { FaUser, FaEnvelope, FaPhone, FaLock, FaBuilding, FaEye, FaEyeSlash } from "react-icons/fa";
 
 function Register() {
     const { login, isAuthenticated } = useAuth();
@@ -11,13 +11,12 @@ function Register() {
     const { showToast } = useToast();
 
     const [formData, setFormData] = useState({
-        firstName: "",
-        lastName: "",
+        companyName: "",
+        fullName: "",
         email: "",
         phone: "",
         password: "",
-        confirmPassword: "",
-        role: "TENANT"
+        confirmPassword: ""
     });
 
     const [showPassword, setShowPassword] = useState(false);
@@ -149,12 +148,11 @@ function Register() {
 
         try {
             await registerUser({
-                firstName: formData.firstName,
-                lastName: formData.lastName,
+                companyName: formData.companyName,
+                fullName: formData.fullName,
                 email: formData.email,
                 phone: formData.phone,
-                password: formData.password,
-                role: formData.role
+                password: formData.password
             });
             const successMsg = "Account registered successfully! Redirecting to login...";
             setSuccess(successMsg);
@@ -216,36 +214,34 @@ function Register() {
                     )}
 
                     <form onSubmit={handleSubmit}>
-                        <div className="row">
-                            <div className="col-md-6 mb-3 text-start">
-                                <label className="form-label small fw-semibold" style={{ color: "var(--text-h)" }}>
-                                    <FaUser className="me-2 text-muted" /> First Name
-                                </label>
-                                <input
-                                    type="text"
-                                    name="firstName"
-                                    className="form-control auth-input"
-                                    value={formData.firstName}
-                                    onChange={handleChange}
-                                    placeholder="John"
-                                    required
-                                />
-                            </div>
+                        <div className="mb-3 text-start">
+                            <label className="form-label small fw-semibold" style={{ color: "var(--text-h)" }}>
+                                <FaBuilding className="me-2 text-muted" /> Company Name
+                            </label>
+                            <input
+                                type="text"
+                                name="companyName"
+                                className="form-control auth-input"
+                                value={formData.companyName}
+                                onChange={handleChange}
+                                placeholder="LogiPrime Properties Inc"
+                                required
+                            />
+                        </div>
 
-                            <div className="col-md-6 mb-3 text-start">
-                                <label className="form-label small fw-semibold" style={{ color: "var(--text-h)" }}>
-                                    <FaUser className="me-2 text-muted" /> Last Name
-                                </label>
-                                <input
-                                    type="text"
-                                    name="lastName"
-                                    className="form-control auth-input"
-                                    value={formData.lastName}
-                                    onChange={handleChange}
-                                    placeholder="Doe"
-                                    required
-                                />
-                            </div>
+                        <div className="mb-3 text-start">
+                            <label className="form-label small fw-semibold" style={{ color: "var(--text-h)" }}>
+                                <FaUser className="me-2 text-muted" /> Full Name
+                            </label>
+                            <input
+                                type="text"
+                                name="fullName"
+                                className="form-control auth-input"
+                                value={formData.fullName}
+                                onChange={handleChange}
+                                placeholder="John Doe"
+                                required
+                            />
                         </div>
 
                         <div className="mb-3 text-start">
@@ -265,7 +261,7 @@ function Register() {
 
                         <div className="mb-3 text-start">
                             <label className="form-label small fw-semibold" style={{ color: "var(--text-h)" }}>
-                                <FaPhone className="me-2 text-muted" /> Phone Number
+                                <FaPhone className="me-2 text-muted" /> Phone Number (Optional)
                             </label>
                             <input
                                 type="tel"
@@ -330,21 +326,6 @@ function Register() {
                                     <div className="text-danger small mt-1">Passwords do not match!</div>
                                 )}
                             </div>
-                        </div>
-
-                        <div className="mb-4 text-start">
-                            <label className="form-label small fw-semibold" style={{ color: "var(--text-h)" }}>
-                                <FaUserCheck className="me-2 text-muted" /> Select Profile Role
-                            </label>
-                            <select
-                                name="role"
-                                className="form-select auth-input"
-                                value={formData.role}
-                                onChange={handleChange}
-                            >
-                                <option value="TENANT">Tenant (Find & Rent Homes)</option>
-                                <option value="OWNER">Property Owner (Manage & List Properties)</option>
-                            </select>
                         </div>
 
                         <button

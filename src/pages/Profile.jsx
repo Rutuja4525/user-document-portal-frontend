@@ -1,23 +1,19 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { changePassword } from "../services/authService";
 import { 
-    FaBuilding, FaFileAlt, FaUser, FaChartPie, FaLock, FaGlobe, 
-    FaShieldAlt, FaSave, FaEye, FaEyeSlash, FaAngleLeft, FaAngleRight, FaGoogle 
+    FaUser, FaLock, FaBuilding, FaEnvelope, FaPhone, FaShieldAlt, FaSave, FaEye, FaEyeSlash 
 } from "react-icons/fa";
 
 function Profile() {
     const { user, login } = useAuth();
-    const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
     // Profile form states
     const [profileData, setProfileData] = useState({
-        firstName: "",
-        lastName: "",
+        companyName: "",
+        fullName: "",
         email: "",
-        phone: "",
-        role: ""
+        phone: ""
     });
 
     // Password change states
@@ -27,8 +23,11 @@ function Profile() {
         confirmPassword: ""
     });
 
-    const [showPassword, setShowPassword] = useState(false);
+    const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+    const [showNewPassword, setShowNewPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [passwordStrength, setPasswordStrength] = useState({ score: 0, label: "Empty", color: "bg-light" });
+    
     const [infoMessage, setInfoMessage] = useState("");
     const [pwdMessage, setPwdMessage] = useState("");
     const [infoLoading, setInfoLoading] = useState(false);
@@ -38,11 +37,10 @@ function Profile() {
     useEffect(() => {
         if (user) {
             setProfileData({
-                firstName: user.firstName || "",
-                lastName: user.lastName || "",
+                companyName: user.companyName || "",
+                fullName: user.fullName || "",
                 email: user.email || "",
-                phone: user.phone || "Not specified",
-                role: user.role || "TENANT"
+                phone: user.phone || ""
             });
         }
     }, [user]);
@@ -94,20 +92,19 @@ function Profile() {
         setInfoLoading(true);
         setInfoMessage("");
 
-        // Simulate API save call
+        // Simulate API save call (local storage updates)
         setTimeout(() => {
             if (user) {
                 const updatedUser = {
                     ...user,
-                    firstName: profileData.firstName,
-                    lastName: profileData.lastName,
+                    fullName: profileData.fullName,
                     phone: profileData.phone
                 };
-                login(updatedUser); // Update local details
+                login(updatedUser); // Update context & local storage
                 setInfoMessage("✅ Profile information updated successfully!");
             }
             setInfoLoading(false);
-        }, 1000);
+        }, 800);
     };
 
     const handlePasswordSubmit = async (e) => {
@@ -130,254 +127,243 @@ function Profile() {
             setPasswordData({ currentPassword: "", newPassword: "", confirmPassword: "" });
         } catch (err) {
             console.error("Change Password Error:", err);
-            setPwdMessage("❌ " + (err.response?.data?.message || "Failed to update password. Please check your credentials."));
+            setPwdMessage("❌ " + (err.response?.data?.message || "Failed to update password. Please check your current password."));
         } finally {
             setPwdLoading(false);
         }
     };
 
     return (
-        <div className="dashboard-shell animate-fade-in">
-            {/* Sidebar Navigation */}
-            <div className={`dashboard-sidebar ${sidebarCollapsed ? "collapsed" : ""}`}>
-                <div className="d-flex align-items-center justify-content-between p-3 border-bottom">
-                    {!sidebarCollapsed && <span className="small fw-bold text-uppercase text-muted" style={{ letterSpacing: "1px" }}>Menu</span>}
-                    <button 
-                        className="btn btn-sm btn-light border-0 ms-auto"
-                        onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-                    >
-                        {sidebarCollapsed ? <FaAngleRight /> : <FaAngleLeft />}
-                    </button>
-                </div>
-
-                <ul className="sidebar-menu">
-                    <li>
-                        <Link className="sidebar-link" to="/dashboard">
-                            <span className="sidebar-icon"><FaChartPie /></span>
-                            <span className="sidebar-text">Overview</span>
-                        </Link>
-                    </li>
-                    <li>
-                        <Link className="sidebar-link" to="/properties">
-                            <span className="sidebar-icon"><FaBuilding /></span>
-                            <span className="sidebar-text">Properties</span>
-                        </Link>
-                    </li>
-                    <li>
-                        <Link className="sidebar-link" to="/documents">
-                            <span className="sidebar-icon"><FaFileAlt /></span>
-                            <span className="sidebar-text">Documents</span>
-                        </Link>
-                    </li>
-                    <li>
-                        <Link className="sidebar-link active" to="/profile">
-                            <span className="sidebar-icon"><FaUser /></span>
-                            <span className="sidebar-text">Profile Settings</span>
-                        </Link>
-                    </li>
-                </ul>
+        <div className="container-fluid py-4 px-md-5 animate-fade-in" style={{ background: "#f8fafc", minHeight: "calc(100vh - 65px)" }}>
+            <div className="mb-4 text-start">
+                <h2 className="fw-bold text-dark mb-1" style={{ letterSpacing: "-0.5px" }}>Profile Settings</h2>
+                <p className="text-muted small mb-0">Manage password, login parameters, and organization profile settings</p>
             </div>
 
-            {/* Main Content Area */}
-            <div className="dashboard-content text-start">
-                <div className="mb-4">
-                    <h2 className="fw-bold text-dark mb-1" style={{ letterSpacing: "-0.5px" }}>Profile Settings</h2>
-                    <p className="text-muted small mb-0">Manage your password, login accounts, and public information preferences</p>
-                </div>
+            <div className="row g-4 text-start">
+                {/* Left Column: Avatar & Basic Information */}
+                <div className="col-12 col-lg-7">
+                    <div className="card border-0 shadow-sm p-4 bg-white mb-4" style={{ borderRadius: "16px" }}>
+                        
+                        {/* Avatar Display */}
+                        <div className="d-flex align-items-center gap-4 border-bottom pb-4 mb-4">
+                            <div className="profile-avatar-circle d-flex align-items-center justify-content-center bg-indigo text-white fw-bold fs-3" 
+                                 style={{ 
+                                     width: "64px", 
+                                     height: "64px", 
+                                     borderRadius: "50%", 
+                                     backgroundColor: "#6366f1"
+                                 }}>
+                                {profileData.fullName ? profileData.fullName[0].toUpperCase() : "C"}
+                            </div>
+                            <div>
+                                <h4 className="fw-bold text-dark mb-1">{profileData.companyName}</h4>
+                                <p className="text-muted small mb-0">{profileData.email}</p>
+                                <span className="badge bg-indigo-50 text-indigo-700 border border-indigo-200 mt-2 px-2.5 py-1.5 small" style={{ fontWeight: "600" }}>
+                                    Corporate Member
+                                </span>
+                            </div>
+                        </div>
 
-                <div className="row g-4">
-                    {/* Left Column: Avatar & Basic Information */}
-                    <div className="col-12 col-lg-7">
-                        <div className="card border-0 shadow-sm p-4 bg-white mb-4" style={{ borderRadius: "var(--radius)" }}>
-                            
-                            {/* Avatar Display */}
-                            <div className="d-flex flex-column flex-sm-row align-items-center gap-4 border-bottom pb-4 mb-4">
-                                <div className="profile-avatar-circle">
-                                    {profileData.firstName ? profileData.firstName[0].toUpperCase() : "U"}
-                                </div>
-                                <div className="text-center text-sm-start">
-                                    <h4 className="fw-bold text-dark mb-1">{profileData.firstName} {profileData.lastName}</h4>
-                                    <p className="text-muted small mb-2">{profileData.email}</p>
-                                    <span className="badge bg-primary text-white px-3 py-1.5 small" style={{ fontWeight: "600" }}>{profileData.role} Profile</span>
+                        <h5 className="fw-bold mb-3 text-dark">Company Member Details</h5>
+
+                        {infoMessage && (
+                            <div className="alert alert-info border-0 py-2 small animate-fade-in" role="alert">
+                                {infoMessage}
+                            </div>
+                        )}
+
+                        <form onSubmit={handleProfileSubmit}>
+                            <div className="mb-3">
+                                <label className="form-label small fw-semibold text-slate-700">Company Name (Read-Only)</label>
+                                <div className="input-group">
+                                    <span className="input-group-text bg-light border-end-0 text-slate-400">
+                                        <FaBuilding size={14} />
+                                    </span>
+                                    <input 
+                                        type="text" 
+                                        className="form-control bg-light border-start-0" 
+                                        value={profileData.companyName} 
+                                        disabled 
+                                    />
                                 </div>
                             </div>
 
-                            <h5 className="fw-bold mb-3 text-dark">Personal Details</h5>
-
-                            {infoMessage && (
-                                <div className="alert alert-info border-0 py-2 small animate-fade-in" role="alert">
-                                    {infoMessage}
+                            <div className="mb-3">
+                                <label className="form-label small fw-semibold text-slate-700">Full Name</label>
+                                <div className="input-group">
+                                    <span className="input-group-text bg-white border-end-0 text-slate-400">
+                                        <FaUser size={14} />
+                                    </span>
+                                    <input 
+                                        type="text" 
+                                        name="fullName" 
+                                        className="form-control border-start-0" 
+                                        value={profileData.fullName} 
+                                        onChange={handleProfileChange}
+                                        required
+                                        style={{ outline: "none", boxShadow: "none" }}
+                                    />
                                 </div>
-                            )}
+                            </div>
 
-                            <form onSubmit={handleProfileSubmit}>
-                                <div className="row">
-                                    <div className="col-md-6 mb-3">
-                                        <label className="form-label small fw-semibold">First Name</label>
-                                        <input 
-                                            type="text" 
-                                            name="firstName" 
-                                            className="form-control" 
-                                            value={profileData.firstName} 
-                                            onChange={handleProfileChange}
-                                            required
-                                        />
-                                    </div>
-                                    <div className="col-md-6 mb-3">
-                                        <label className="form-label small fw-semibold">Last Name</label>
-                                        <input 
-                                            type="text" 
-                                            name="lastName" 
-                                            className="form-control" 
-                                            value={profileData.lastName} 
-                                            onChange={handleProfileChange}
-                                            required
-                                        />
-                                    </div>
-                                </div>
-
-                                <div className="mb-3">
-                                    <label className="form-label small fw-semibold">Email Address (Read-Only)</label>
+                            <div className="mb-3">
+                                <label className="form-label small fw-semibold text-slate-700">Email Address (Read-Only)</label>
+                                <div className="input-group">
+                                    <span className="input-group-text bg-light border-end-0 text-slate-400">
+                                        <FaEnvelope size={14} />
+                                    </span>
                                     <input 
                                         type="email" 
-                                        className="form-control bg-light" 
+                                        className="form-control bg-light border-start-0" 
                                         value={profileData.email} 
                                         disabled 
                                     />
                                 </div>
+                            </div>
 
-                                <div className="mb-4">
-                                    <label className="form-label small fw-semibold">Phone Number</label>
+                            <div className="mb-4">
+                                <label className="form-label small fw-semibold text-slate-700">Contact Number</label>
+                                <div className="input-group">
+                                    <span className="input-group-text bg-white border-end-0 text-slate-400">
+                                        <FaPhone size={14} />
+                                    </span>
                                     <input 
                                         type="tel" 
                                         name="phone" 
-                                        className="form-control" 
+                                        className="form-control border-start-0" 
                                         value={profileData.phone} 
                                         onChange={handleProfileChange}
+                                        placeholder="Enter your contact number"
+                                        style={{ outline: "none", boxShadow: "none" }}
                                     />
                                 </div>
-
-                                <button 
-                                    type="submit" 
-                                    className="btn btn-primary d-flex align-items-center gap-2 px-4 py-2" 
-                                    style={{ borderRadius: "8px", fontWeight: "600" }}
-                                    disabled={infoLoading}
-                                >
-                                    {infoLoading && <span className="spinner-border spinner-border-sm" role="status"></span>}
-                                    <FaSave size={14} /> Update Info
-                                </button>
-                            </form>
-                        </div>
-
-                        {/* Connected Accounts */}
-                        <div className="card border-0 shadow-sm p-4 bg-white" style={{ borderRadius: "var(--radius)" }}>
-                            <h5 className="fw-bold mb-2 text-dark">Connected Accounts</h5>
-                            <p className="text-muted small mb-3">Manage third-party login linkages</p>
-                            
-                            <div className="d-flex align-items-center justify-content-between p-3 border rounded">
-                                <div className="d-flex align-items-center gap-2.5">
-                                    <span className="fs-5 text-danger"><FaGoogle /></span>
-                                    <div>
-                                        <span className="fw-bold text-dark d-block small">Google Authentication</span>
-                                        <span className="text-muted" style={{ fontSize: "11px" }}>Use Google One-Tap for instant sign-ins.</span>
-                                    </div>
-                                </div>
-                                <span className="badge bg-success px-3 py-1">Linked</span>
                             </div>
-                        </div>
+
+                            <button 
+                                type="submit" 
+                                className="btn btn-primary d-flex align-items-center gap-2 px-4 py-2 border-0" 
+                                style={{ borderRadius: "8px", fontWeight: "600", background: "#6366f1" }}
+                                disabled={infoLoading}
+                            >
+                                {infoLoading && <span className="spinner-border spinner-border-sm" role="status"></span>}
+                                <FaSave size={14} /> Save Profile
+                            </button>
+                        </form>
                     </div>
+                </div>
 
-                    {/* Right Column: Change Password */}
-                    <div className="col-12 col-lg-5">
-                        <div className="card border-0 shadow-sm p-4 bg-white h-100" style={{ borderRadius: "var(--radius)" }}>
-                            <h5 className="fw-bold mb-1 text-dark">Change Password</h5>
-                            <p className="text-muted small mb-4">Ensure your account is protected with a secure password</p>
+                {/* Right Column: Change Password */}
+                <div className="col-12 col-lg-5">
+                    <div className="card border-0 shadow-sm p-4 bg-white h-100" style={{ borderRadius: "16px" }}>
+                        <h5 className="fw-bold mb-1 text-dark d-flex align-items-center gap-2">
+                            <FaShieldAlt className="text-indigo" style={{ color: "#6366f1" }} /> Security Panel
+                        </h5>
+                        <p className="text-muted small mb-4">Ensure your account is protected with a secure password</p>
 
-                            {pwdMessage && (
-                                <div className="alert alert-info border-0 py-2 small animate-fade-in" role="alert">
-                                    {pwdMessage}
-                                </div>
-                            )}
+                        {pwdMessage && (
+                            <div className="alert alert-info border-0 py-2 small animate-fade-in" role="alert">
+                                {pwdMessage}
+                            </div>
+                        )}
 
-                            <form onSubmit={handlePasswordSubmit}>
-                                <div className="mb-3">
-                                    <label className="form-label small fw-semibold">Current Password</label>
+                        <form onSubmit={handlePasswordSubmit}>
+                            <div className="mb-3">
+                                <label className="form-label small fw-semibold text-slate-700">Current Password</label>
+                                <div className="position-relative">
                                     <input 
-                                        type="password" 
+                                        type={showCurrentPassword ? "text" : "password"} 
                                         name="currentPassword" 
-                                        className="form-control" 
-                                        placeholder="Enter current password"
-                                        value={passwordData.currentPassword}
+                                        className="form-control pe-5" 
+                                        value={passwordData.currentPassword} 
                                         onChange={handlePasswordChange}
                                         required
+                                        style={{ borderRadius: "8px" }}
                                     />
+                                    <button
+                                        type="button"
+                                        className="btn btn-link position-absolute text-muted p-0"
+                                        style={{ right: "15px", top: "50%", transform: "translateY(-50%)", textDecoration: "none", zIndex: 5 }}
+                                        onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                                    >
+                                        {showCurrentPassword ? <FaEyeSlash size={16} /> : <FaEye size={16} />}
+                                    </button>
                                 </div>
+                            </div>
 
-                                <div className="mb-3">
-                                    <label className="form-label small fw-semibold">New Password</label>
-                                    <div className="position-relative">
-                                        <input 
-                                            type={showPassword ? "text" : "password"} 
-                                            name="newPassword" 
-                                            className="form-control pe-5" 
-                                            placeholder="Enter new password"
-                                            value={passwordData.newPassword}
-                                            onChange={handlePasswordChange}
-                                            minLength="6"
-                                            required
-                                        />
-                                        <button
-                                            type="button"
-                                            className="btn btn-link position-absolute text-muted p-0"
-                                            style={{ right: "15px", top: "50%", transform: "translateY(-50%)", textDecoration: "none", zIndex: 5 }}
-                                            onClick={() => setShowPassword(!showPassword)}
-                                        >
-                                            {showPassword ? <FaEyeSlash size={16} /> : <FaEye size={16} />}
-                                        </button>
-                                    </div>
-
-                                    {/* Password Strength progress bar */}
-                                    {passwordData.newPassword && (
-                                        <div className="mt-2">
-                                            <div className="progress" style={{ height: "4px" }}>
-                                                <div 
-                                                    className={`progress-bar ${passwordStrength.color}`} 
-                                                    style={{ width: `${(passwordStrength.score / 5) * 100}%` }}
-                                                ></div>
-                                            </div>
-                                            <div className="strength-text" style={{ fontSize: "11px", color: "#64748b" }}>
-                                                Strength: <strong>{passwordStrength.label}</strong>
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-
-                                <div className="mb-4">
-                                    <label className="form-label small fw-semibold">Confirm New Password</label>
+                            <div className="mb-3">
+                                <label className="form-label small fw-semibold text-slate-700">New Password</label>
+                                <div className="position-relative">
                                     <input 
-                                        type={showPassword ? "text" : "password"} 
-                                        name="confirmPassword" 
-                                        className="form-control" 
-                                        placeholder="Confirm new password"
-                                        value={passwordData.confirmPassword}
+                                        type={showNewPassword ? "text" : "password"} 
+                                        name="newPassword" 
+                                        className="form-control pe-5" 
+                                        value={passwordData.newPassword} 
                                         onChange={handlePasswordChange}
                                         required
+                                        style={{ borderRadius: "8px" }}
                                     />
-                                    {passwordData.confirmPassword && passwordData.newPassword !== passwordData.confirmPassword && (
-                                        <div className="text-danger small mt-1">Passwords do not match!</div>
-                                    )}
+                                    <button
+                                        type="button"
+                                        className="btn btn-link position-absolute text-muted p-0"
+                                        style={{ right: "15px", top: "50%", transform: "translateY(-50%)", textDecoration: "none", zIndex: 5 }}
+                                        onClick={() => setShowNewPassword(!showNewPassword)}
+                                    >
+                                        {showNewPassword ? <FaEyeSlash size={16} /> : <FaEye size={16} />}
+                                    </button>
                                 </div>
+                                {passwordData.newPassword && (
+                                    <div className="mt-2">
+                                        <div className="progress" style={{ height: "4px" }}>
+                                            <div 
+                                                className={`progress-bar ${passwordStrength.color}`} 
+                                                role="progressbar" 
+                                                style={{ width: `${(passwordStrength.score + 1) * 20}%` }}
+                                            ></div>
+                                        </div>
+                                        <span className="small text-muted mt-1 d-block" style={{ fontSize: "11px" }}>
+                                            Strength: <strong>{passwordStrength.label}</strong>
+                                        </span>
+                                    </div>
+                                )}
+                            </div>
 
-                                <button 
-                                    type="submit" 
-                                    className="btn btn-premium w-100 d-flex align-items-center justify-content-center"
-                                    disabled={pwdLoading || (passwordData.confirmPassword && passwordData.newPassword !== passwordData.confirmPassword)}
-                                >
-                                    {pwdLoading && <span className="spinner-border spinner-border-sm me-2" role="status"></span>}
-                                    <FaLock size={12} className="me-2" /> Update Password
-                                </button>
-                            </form>
-                        </div>
+                            <div className="mb-4">
+                                <label className="form-label small fw-semibold text-slate-700">Confirm New Password</label>
+                                <div className="position-relative">
+                                    <input 
+                                        type={showConfirmPassword ? "text" : "password"} 
+                                        name="confirmPassword" 
+                                        className="form-control pe-5" 
+                                        value={passwordData.confirmPassword} 
+                                        onChange={handlePasswordChange}
+                                        required
+                                        style={{ borderRadius: "8px" }}
+                                    />
+                                    <button
+                                        type="button"
+                                        className="btn btn-link position-absolute text-muted p-0"
+                                        style={{ right: "15px", top: "50%", transform: "translateY(-50%)", textDecoration: "none", zIndex: 5 }}
+                                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                    >
+                                        {showConfirmPassword ? <FaEyeSlash size={16} /> : <FaEye size={16} />}
+                                    </button>
+                                </div>
+                                {passwordData.confirmPassword && passwordData.newPassword !== passwordData.confirmPassword && (
+                                    <div className="text-danger small mt-1">Passwords do not match!</div>
+                                )}
+                            </div>
+
+                            <button 
+                                type="submit" 
+                                className="btn btn-primary d-flex align-items-center gap-2 px-4 py-2 border-0" 
+                                style={{ borderRadius: "8px", fontWeight: "600", background: "#6366f1" }}
+                                disabled={pwdLoading || (passwordData.confirmPassword && passwordData.newPassword !== passwordData.confirmPassword)}
+                            >
+                                {pwdLoading && <span className="spinner-border spinner-border-sm" role="status"></span>}
+                                <FaLock size={14} /> Update Password
+                            </button>
+                        </form>
                     </div>
                 </div>
             </div>
