@@ -32,13 +32,20 @@ function Login() {
         setLoading(true);
         try {
             const apiResponse = await googleLoginUser({
-                credential: response.credential
+                credential: response.credential,
+                isSignUp: false
             });
             login(apiResponse.data);
-            navigate("/documents");
+            
+            const userObj = apiResponse.data;
+            if (!userObj.companyName) {
+                navigate("/setup-company");
+            } else {
+                navigate("/documents");
+            }
         } catch (err) {
             console.error("Google Auth failed", err);
-            setError(err.response?.data?.message || "Google Sign-in failed. Please verify configurations.");
+            setError(err.response?.data?.message || "Google authentication failed. Please try again.");
         } finally {
             setLoading(false);
         }
@@ -132,10 +139,10 @@ function Login() {
                         style={{ height: "65px", width: "auto" }} 
                     />
                     <h1 className="fw-extrabold text-white mb-2" style={{ fontSize: "2.6rem", letterSpacing: "-1px" }}>
-                        Welcome to DocUpload
+                        Welcome to Lease Document Upload
                     </h1>
                     <h2 className="fs-5 text-blue-400 fw-semibold mb-3">
-                        Secure User Document Upload Portal
+                        Secure Lease Document Upload Portal
                     </h2>
                     <p className="text-white-50 mx-auto" style={{ maxWidth: "450px", fontSize: "15px", lineHeight: "1.6" }}>
                         Upload, verify, and manage documents securely from one unified platform.
@@ -241,7 +248,7 @@ function Login() {
 
                     <div className="text-center mt-4 pt-2 border-top">
                         <p className="text-muted small mb-0">
-                            New to DocUpload?{" "}
+                            New to Lease Document Upload Portal?{" "}
                             <Link to="/register" className="fw-bold text-decoration-none" style={{ color: "var(--primary)" }}>
                                 Create an account
                             </Link>

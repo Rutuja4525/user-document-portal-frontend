@@ -13,7 +13,7 @@ function Navbar() {
         <Link className="navbar-brand d-flex align-items-center gap-2" to="/">
           <span className="d-flex align-items-center gap-1.5">
             <span className="text-slate-800 fw-bold fs-4">
-              {user ? user.companyName : "DocUpload Portal"}
+              {user ? user.companyName : "Lease Document Upload Portal"}
             </span>
           </span>
         </Link>

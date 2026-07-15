@@ -16,4 +16,12 @@ export const googleLoginUser = (googleData) => {
 
 export const changePassword = (passwordData) => {
     return axios.post(`${BASE_URL}/change-password`, passwordData);
+};
+
+export const getCompanies = () => {
+    return axios.get(`${BASE_URL}/companies`);
+};
+
+export const updateCompany = (companyData) => {
+    return axios.put(`${BASE_URL}/update-company`, companyData);
 };

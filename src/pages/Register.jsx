@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { registerUser, googleLoginUser } from "../services/authService";
+import { registerUser, googleLoginUser, getCompanies } from "../services/authService";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
 import { FaUser, FaEnvelope, FaPhone, FaLock, FaBuilding, FaEye, FaEyeSlash } from "react-icons/fa";
@@ -19,6 +19,7 @@ function Register() {
         confirmPassword: ""
     });
 
+    const [companies, setCompanies] = useState([]);
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [passwordStrength, setPasswordStrength] = useState({ score: 0, label: "Empty", color: "bg-light" });
@@ -32,6 +33,19 @@ function Register() {
             navigate("/");
         }
     }, [isAuthenticated, navigate]);
+
+    // Fetch registered companies on component mount
+    useEffect(() => {
+        const fetchCompanies = async () => {
+            try {
+                const response = await getCompanies();
+                setCompanies(response.data);
+            } catch (err) {
+                console.error("Error fetching companies:", err);
+            }
+        };
+        fetchCompanies();
+    }, []);
 
     // Calculate password strength
     useEffect(() => {
@@ -69,14 +83,24 @@ function Register() {
         try {
             const apiResponse = await googleLoginUser({
                 credential: response.credential,
-                role: formData.role
+                role: "OWNER",
+                isSignUp: true
             });
             login(apiResponse.data);
-            setSuccess("Google Sign-in Successful!");
-            setTimeout(() => navigate("/documents"), 1000);
+            setSuccess("Google Authentication Successful!");
+            showToast("Google Authentication Successful!", "success");
+
+            const userObj = apiResponse.data;
+            if (!userObj.companyName) {
+                setTimeout(() => navigate("/setup-company"), 1000);
+            } else {
+                setTimeout(() => navigate("/documents"), 1000);
+            }
         } catch (err) {
-            console.error("Google Registration failed", err);
-            setError(err.response?.data?.message || "Google registration failed. Please verify credentials.");
+            console.error("Google Auth failed", err);
+            const errMsg = err.response?.data?.message || "Google authentication failed. Please verify credentials.";
+            setError(errMsg);
+            showToast(errMsg, "error");
         } finally {
             setLoading(false);
         }
@@ -221,12 +245,19 @@ function Register() {
                             <input
                                 type="text"
                                 name="companyName"
+                                list="companies-list"
                                 className="form-control auth-input"
                                 value={formData.companyName}
                                 onChange={handleChange}
-                                placeholder="LogiPrime Properties Inc"
+                                placeholder="Enter or select company name"
                                 required
+                                disabled={loading}
                             />
+                            <datalist id="companies-list">
+                                {companies.map((company, index) => (
+                                    <option key={index} value={company} />
+                                ))}
+                            </datalist>
                         </div>
 
                         <div className="mb-3 text-start">
@@ -346,7 +377,7 @@ function Register() {
                         <div id="google-signup-btn" className="w-100"></div>
                     </div>
                     <p className="text-muted small text-center mt-2 mb-0" style={{ fontSize: "11px" }}>
-                        * Selected role will be applied if registering a new profile via Google.
+                        * Note: If signing up with Google, you will be prompted to set up your company details after signing in.
                     </p>
 
                     <div className="text-center mt-4 pt-2 border-top">
