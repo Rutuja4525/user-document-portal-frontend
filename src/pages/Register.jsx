@@ -73,7 +73,7 @@ function Register() {
             });
             login(apiResponse.data);
             setSuccess("Google Sign-in Successful!");
-            setTimeout(() => navigate("/dashboard"), 1000);
+            setTimeout(() => navigate("/documents"), 1000);
         } catch (err) {
             console.error("Google Registration failed", err);
             setError(err.response?.data?.message || "Google registration failed. Please verify credentials.");

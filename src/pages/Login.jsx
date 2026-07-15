@@ -35,7 +35,7 @@ function Login() {
                 credential: response.credential
             });
             login(apiResponse.data);
-            navigate("/dashboard");
+            navigate("/documents");
         } catch (err) {
             console.error("Google Auth failed", err);
             setError(err.response?.data?.message || "Google Sign-in failed. Please verify configurations.");
@@ -104,7 +104,7 @@ function Login() {
             const response = await loginUser(formData);
             login(response.data);
             showToast("Welcome back! Logged in successfully.", "success");
-            navigate("/dashboard");
+            navigate("/documents");
         } catch (err) {
             console.error("Login Error:", err);
             const errMsg = err.response?.data?.message || "Invalid email or password. Please try again.";
@@ -148,7 +148,7 @@ function Login() {
                 <div className="auth-card">
                     <div className="text-center mb-4">
                         <h2 className="fw-bold mb-1 text-slate-800" style={{ fontSize: "24px" }}>Sign In</h2>
-                        <p className="text-muted small">Enter your account details to access your dashboard</p>
+                        <p className="text-muted small">Enter your account details to access your documents</p>
                     </div>
 
                     {error && (

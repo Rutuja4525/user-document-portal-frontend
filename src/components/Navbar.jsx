@@ -1,6 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { FaUserCircle, FaSignOutAlt, FaBuilding, FaFileAlt, FaChartPie, FaBell, FaSearch, FaUser } from "react-icons/fa";
+import { FaUserCircle, FaSignOutAlt, FaBuilding, FaFileAlt, FaBell, FaSearch, FaUser } from "react-icons/fa";
 
 function Navbar() {
   const { user, logout } = useAuth();
@@ -38,11 +38,6 @@ function Navbar() {
 
             {user && (
               <>
-                <li className="nav-item">
-                  <Link className={`nav-link px-3 d-flex align-items-center gap-1.5 ${location.pathname === "/dashboard" ? "text-primary fw-bold" : "text-slate-600"}`} to="/dashboard">
-                    <FaChartPie size={14} /> Dashboard
-                  </Link>
-                </li>
                 <li className="nav-item">
                   <Link className={`nav-link px-3 d-flex align-items-center gap-1.5 ${location.pathname === "/documents" ? "text-primary fw-bold" : "text-slate-600"}`} to="/documents">
                     <FaFileAlt size={14} /> Documents
@@ -82,9 +77,6 @@ function Navbar() {
                     </li>
                     <li>
                       <Link className="dropdown-item rounded small text-slate-700" to="/profile">My Profile</Link>
-                    </li>
-                    <li>
-                      <Link className="dropdown-item rounded small text-slate-700" to="/dashboard">Dashboard</Link>
                     </li>
                     <li><hr className="dropdown-divider" /></li>
                     <li>

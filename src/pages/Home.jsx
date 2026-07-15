@@ -37,8 +37,7 @@ function Home() {
               <div className="p-3 bg-light rounded border border-slate-200 w-100 max-w-md mx-auto d-flex flex-column align-items-center gap-2">
                 <span className="fw-semibold text-slate-700">Logged in as <span className="text-primary">{user.fullName}</span> ({user.companyName})</span>
                 <div className="d-flex gap-2.5">
-                  <Link to="/dashboard" className="btn btn-primary btn-sm px-3" style={{ borderRadius: "6px", background: "#6366f1", border: "none" }}>Go to Dashboard</Link>
-                  <Link to="/documents" className="btn btn-outline-secondary btn-sm px-3" style={{ borderRadius: "6px" }}>Documents</Link>
+                  <Link to="/documents" className="btn btn-primary btn-sm px-4" style={{ borderRadius: "6px", background: "#6366f1", border: "none" }}>Go to Documents</Link>
                 </div>
               </div>
             )}

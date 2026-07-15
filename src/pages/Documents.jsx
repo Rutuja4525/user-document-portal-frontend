@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useToast } from "../context/ToastContext";
 import { 
-    getDocuments, uploadDocument, deleteDocument, downloadDocument, downloadProcessedDocument 
+    getDocuments, uploadDocument, deleteDocument, downloadDocument 
 } from "../services/documentService";
 import { 
     FaFileAlt, FaSearch, FaTrash, FaCloudUploadAlt, FaFileWord, FaDownload, 
@@ -43,18 +43,7 @@ function Documents() {
         fetchDocs();
     }, []);
 
-    // Polling effect for documents that are "Uploaded" or "Processing"
-    useEffect(() => {
-        const hasActiveProcessing = documents.some(
-            (doc) => doc.status === "Uploaded" || doc.status === "Processing"
-        );
-        if (hasActiveProcessing) {
-            const interval = setInterval(() => {
-                fetchDocs();
-            }, 3000);
-            return () => clearInterval(interval);
-        }
-    }, [documents]);
+
 
     // Handle drag events
     const handleDrag = (e) => {
@@ -116,7 +105,7 @@ function Documents() {
             await uploadDocument(selectedFile, selectedCategory);
             clearInterval(progressInterval);
             setUploadProgress(100);
-            showToast("Document uploaded successfully! Document processing initiated.", "success");
+            showToast("Document uploaded successfully!", "success");
             setSelectedFile(null);
             setTimeout(() => {
                 setUploading(false);
@@ -156,23 +145,7 @@ function Documents() {
     });
 
     const getStatusBadge = (status) => {
-        switch(status?.toLowerCase()) {
-            case "uploaded":
-                return <span className="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-2.5 py-1">Uploaded</span>;
-            case "processing":
-                return (
-                    <span className="badge bg-primary-subtle text-primary border border-primary-subtle px-2.5 py-1 d-inline-flex align-items-center gap-1">
-                        <FaSpinner className="spinner-border-spinner animate-spin" style={{ animation: "spin 1.5s linear infinite", fontSize: "10px" }} />
-                        Processing
-                    </span>
-                );
-            case "processed":
-                return <span className="badge bg-success-subtle text-success border border-success-subtle px-2.5 py-1">Processed</span>;
-            case "failed":
-                return <span className="badge bg-danger-subtle text-danger border border-danger-subtle px-2.5 py-1">Failed</span>;
-            default:
-                return <span className="badge bg-light text-dark px-2.5 py-1">{status}</span>;
-        }
+        return <span className="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-2.5 py-1">Uploaded</span>;
     };
 
     return (
@@ -269,7 +242,7 @@ function Documents() {
                                     </>
                                 ) : (
                                     <>
-                                        <FaCloudUploadAlt /> Process Document
+                                        <FaCloudUploadAlt /> Upload Document
                                     </>
                                 )}
                             </button>
@@ -382,16 +355,7 @@ function Documents() {
                                                         >
                                                             <FaDownload size={12} className="text-slate-600" />
                                                         </button>
-                                                        {doc.status === "Processed" && (
-                                                            <button 
-                                                                onClick={() => downloadProcessedDocument(doc.id, doc.name)}
-                                                                className="btn btn-sm btn-primary border-0 p-1.5"
-                                                                title="Download Processed Copy"
-                                                                style={{ background: "#6366f1" }}
-                                                            >
-                                                                <FaFileAlt size={12} className="text-white" />
-                                                            </button>
-                                                        )}
+
                                                         <button 
                                                             onClick={() => handleDelete(doc.id)}
                                                             className="btn btn-sm btn-light border-0 p-1.5 text-danger"
@@ -425,69 +389,19 @@ function Documents() {
                             </div>
                             <div className="modal-body py-4">
                                 <div className="row g-4">
-                                    <div className="col-12 col-md-5">
+                                    <div className="col-12 col-md-12">
                                         <div className="p-3 bg-light rounded-3" style={{ fontSize: "13px" }}>
                                             <p className="mb-2.5"><strong>File Name:</strong> <span className="text-slate-800 d-block text-truncate">{previewDoc.name}</span></p>
                                             <p className="mb-2.5"><strong>Category:</strong> <span className="text-slate-800 d-block">{previewDoc.category}</span></p>
                                             <p className="mb-2.5"><strong>File Size:</strong> <span className="text-slate-800 d-block">{previewDoc.size}</span></p>
                                             <p className="mb-2.5"><strong>Upload Date:</strong> <span className="text-slate-800 d-block"><FaCalendarAlt className="me-1.5 text-muted" />{previewDoc.date}</span></p>
-                                            <p className="mb-2.5"><strong>S3 Location:</strong> <span className="text-slate-800 d-block text-truncate" title={previewDoc.s3Key}><FaHdd className="me-1.5 text-muted" />{previewDoc.s3Key}</span></p>
-                                            {previewDoc.processedS3Key && (
-                                                <p className="mb-0"><strong>Processed S3 Key:</strong> <span className="text-slate-800 d-block text-truncate" title={previewDoc.processedS3Key}><FaHdd className="me-1.5 text-indigo-500" />{previewDoc.processedS3Key}</span></p>
-                                            )}
-                                        </div>
-                                    </div>
-                                    <div className="col-12 col-md-7">
-                                        <div className="border border-slate-200 rounded-3 p-3 h-100" style={{ background: "#f8fafc", minHeight: "220px" }}>
-                                            <h6 className="fw-semibold text-slate-800 mb-2">Token Processing Status</h6>
-                                            {previewDoc.status === "Processed" ? (
-                                                <div className="small text-slate-600">
-                                                    <p className="text-success mb-3 d-flex align-items-center gap-1.5 fw-medium">
-                                                        <FaCheckCircle /> Python Macro Completed Successfully!
-                                                    </p>
-                                                    <p className="mb-2">The system has scanned the document and inserted standard corporate blocks:</p>
-                                                    <div className="p-2.5 bg-white rounded border border-slate-100 font-monospace mb-2 text-indigo-950" style={{ fontSize: "11px" }}>
-                                                        [Client_Token_Block]<br />
-                                                        [Manager_Token_Block]<br />
-                                                        [Witness_Token_Block]
-                                                    </div>
-                                                    <p className="mb-0 text-muted">Ready to be downloaded and uploaded directly into Yardi.</p>
-                                                </div>
-                                            ) : previewDoc.status === "Processing" ? (
-                                                <div className="h-100 d-flex flex-column align-items-center justify-content-center py-4 text-center text-muted">
-                                                    <FaSpinner className="animate-spin mb-2 text-indigo-600" size={24} style={{ animation: "spin 1.5s linear infinite" }} />
-                                                    <p className="mb-1 fw-medium">Extracting content and placing tokens...</p>
-                                                    <span className="small text-muted">Processing simulates Python token placement.</span>
-                                                </div>
-                                            ) : previewDoc.status === "Failed" ? (
-                                                <div className="small text-danger">
-                                                    <p className="fw-bold mb-1">❌ Token Injection Failed</p>
-                                                    <p className="text-slate-600 mb-0">The Python document parser returned error status. Please check your docx schema and formatting.</p>
-                                                </div>
-                                            ) : (
-                                                <div className="small text-muted">
-                                                    <p className="mb-1">Document uploaded. Processing queue initiated...</p>
-                                                </div>
-                                            )}
+                                            <p className="mb-0"><strong>S3 Location:</strong> <span className="text-slate-800 d-block text-truncate" title={previewDoc.s3Key}><FaHdd className="me-1.5 text-muted" />{previewDoc.s3Key}</span></p>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                             <div className="modal-footer border-top-0 pt-0">
                                 <button type="button" className="btn btn-secondary border-0 small px-3.5 py-2" onClick={() => setPreviewDoc(null)} style={{ borderRadius: "8px", background: "#64748b" }}>Close</button>
-                                {previewDoc.status === "Processed" && (
-                                    <button 
-                                        type="button" 
-                                        className="btn btn-primary border-0 small px-3.5 py-2 d-inline-flex align-items-center gap-1.5" 
-                                        onClick={() => {
-                                            downloadProcessedDocument(previewDoc.id, previewDoc.name);
-                                            setPreviewDoc(null);
-                                        }}
-                                        style={{ borderRadius: "8px", background: "#6366f1" }}
-                                    >
-                                        <FaDownload /> Download Processed
-                                    </button>
-                                )}
                             </div>
                         </div>
                     </div>
