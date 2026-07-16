@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
 import { useToast } from "../context/ToastContext";
 import { 
-    getDocuments, uploadDocument, deleteDocument, downloadDocument 
+    getDocuments, uploadDocument, deleteDocument, downloadDocument, downloadProcessedDocument 
 } from "../services/documentService";
 import { 
-    FaFileAlt, FaSearch, FaTrash, FaCloudUploadAlt, FaFileWord, FaDownload, 
-    FaSpinner, FaFileSignature, FaEye, FaSyncAlt, FaCalendarAlt, FaHdd, FaFileCsv
+    FaFileAlt, FaSearch, FaTrash, FaCloudUploadAlt, FaFileWord, FaFilePdf, FaDownload, 
+    FaSpinner, FaFileSignature, FaSyncAlt, FaFileCsv, FaCheckCircle, FaCog, FaTimesCircle
 } from "react-icons/fa";
 
 function Documents() {
@@ -22,8 +22,7 @@ function Documents() {
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedFile, setSelectedFile] = useState(null);
 
-    // Preview Modal state
-    const [previewDoc, setPreviewDoc] = useState(null);
+
 
     const fetchDocs = async () => {
         try {
@@ -40,6 +39,19 @@ function Documents() {
     useEffect(() => {
         fetchDocs();
     }, []);
+
+    // Auto-poll while any document is still processing
+    useEffect(() => {
+        const hasProcessing = documents.some(
+            (doc) => doc.processingStatus === "PENDING" || doc.processingStatus === "PROCESSING"
+        );
+        if (hasProcessing) {
+            const interval = setInterval(() => {
+                fetchDocs();
+            }, 5000);
+            return () => clearInterval(interval);
+        }
+    }, [documents]);
 
 
 
@@ -125,9 +137,7 @@ function Documents() {
                 await deleteDocument(id);
                 showToast("Document deleted successfully.", "success");
                 fetchDocs();
-                if (previewDoc && previewDoc.id === id) {
-                    setPreviewDoc(null);
-                }
+
             } catch (error) {
                 console.error("Deletion failed", error);
                 showToast("Failed to delete document", "error");
@@ -141,7 +151,29 @@ function Documents() {
     });
 
     const getStatusBadge = (status) => {
-        return <span className="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-2.5 py-1">Uploaded</span>;
+        switch (status) {
+            case "PENDING":
+            case "PROCESSING":
+                return (
+                    <span className="badge bg-warning-subtle text-warning border border-warning-subtle px-2.5 py-1 d-inline-flex align-items-center gap-1">
+                        <FaCog size={10} className="animate-spin" /> Processing…
+                    </span>
+                );
+            case "COMPLETED":
+                return (
+                    <span className="badge bg-success-subtle text-success border border-success-subtle px-2.5 py-1 d-inline-flex align-items-center gap-1">
+                        <FaCheckCircle size={10} /> Processed
+                    </span>
+                );
+            case "FAILED":
+                return (
+                    <span className="badge bg-danger-subtle text-danger border border-danger-subtle px-2.5 py-1 d-inline-flex align-items-center gap-1">
+                        <FaTimesCircle size={10} /> Failed
+                    </span>
+                );
+            default:
+                return <span className="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-2.5 py-1">Uploaded</span>;
+        }
     };
 
     return (
@@ -289,9 +321,15 @@ function Documents() {
                                             <tr key={doc.id} style={{ borderBottom: "1px solid #f1f5f9" }}>
                                                 <td className="py-2.5">
                                                     <div className="d-flex align-items-center gap-2.5">
-                                                        <div className="p-2 rounded-2 bg-indigo-50 text-indigo-600">
-                                                            <FaFileWord size={16} />
-                                                        </div>
+                                                        {doc.name.toLowerCase().endsWith(".pdf") ? (
+                                                            <div className="p-2 rounded-2 bg-danger-subtle text-danger">
+                                                                <FaFilePdf size={16} />
+                                                            </div>
+                                                        ) : (
+                                                            <div className="p-2 rounded-2 bg-indigo-50 text-indigo-600">
+                                                                <FaFileWord size={16} />
+                                                            </div>
+                                                        )}
                                                         <div>
                                                             <span className="fw-semibold text-slate-800 d-block small" style={{ maxWidth: "220px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                                                                 {doc.name}
@@ -301,16 +339,10 @@ function Documents() {
                                                     </div>
                                                 </td>
                                                 <td className="py-2.5 small text-slate-600">{doc.size}</td>
-                                                <td className="py-2.5">{getStatusBadge(doc.status)}</td>
+                                                <td className="py-2.5">{getStatusBadge(doc.processingStatus)}</td>
                                                 <td className="py-2.5 text-end">
                                                     <div className="d-inline-flex gap-1">
-                                                        <button 
-                                                            onClick={() => setPreviewDoc(doc)}
-                                                            className="btn btn-sm btn-light border-0 p-1.5"
-                                                            title="Preview Details"
-                                                        >
-                                                            <FaEye size={12} className="text-slate-600" />
-                                                        </button>
+
                                                         <button 
                                                             onClick={() => downloadDocument(doc.id, doc.name)}
                                                             className="btn btn-sm btn-light border-0 p-1.5"
@@ -339,36 +371,97 @@ function Documents() {
 
             </div>
 
-            {/* Document Preview Modal */}
-            {previewDoc && (
-                <div className="modal show d-block" tabIndex="-1" style={{ backgroundColor: "rgba(0, 0, 0, 0.45)" }}>
-                    <div className="modal-dialog modal-dialog-centered modal-lg">
-                        <div className="modal-content border-0 text-start shadow" style={{ borderRadius: "16px" }}>
-                            <div className="modal-header border-bottom-0 pb-0">
-                                <h5 className="modal-title fw-bold text-dark d-flex align-items-center gap-2">
-                                    <FaFileWord className="text-indigo-600" /> Document Preview
+            {/* ── Processed Document Repository (Full-Width Section Below) ── */}
+            <div className="row mt-4">
+                <div className="col-12">
+                    <div className="card border-0 shadow-sm p-4 bg-white" style={{ borderRadius: "16px" }}>
+                        <div className="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+                            <div>
+                                <h5 className="fw-bold text-dark mb-1 d-flex align-items-center gap-2">
+                                    <FaCheckCircle className="text-success" /> Processed Document Repository
                                 </h5>
-                                <button type="button" className="btn-close" onClick={() => setPreviewDoc(null)} aria-label="Close"></button>
+                                <p className="text-muted mb-0 small">Macro-processed documents ready for Yardi import</p>
                             </div>
-                            <div className="modal-body py-4">
-                                <div className="row g-4">
-                                    <div className="col-12 col-md-12">
-                                        <div className="p-3 bg-light rounded-3" style={{ fontSize: "13px" }}>
-                                            <p className="mb-2.5"><strong>File Name:</strong> <span className="text-slate-800 d-block text-truncate">{previewDoc.name}</span></p>
-                                            <p className="mb-2.5"><strong>File Size:</strong> <span className="text-slate-800 d-block">{previewDoc.size}</span></p>
-                                            <p className="mb-2.5"><strong>Upload Date:</strong> <span className="text-slate-800 d-block"><FaCalendarAlt className="me-1.5 text-muted" />{previewDoc.date}</span></p>
-                                            <p className="mb-0"><strong>S3 Location:</strong> <span className="text-slate-800 d-block text-truncate" title={previewDoc.s3Key}><FaHdd className="me-1.5 text-muted" />{previewDoc.s3Key}</span></p>
-                                        </div>
-                                    </div>
+                            <span className="badge bg-success-subtle text-success border border-success-subtle px-3 py-2" style={{ fontSize: "12px" }}>
+                                {filteredDocs.filter(d => d.processingStatus === "COMPLETED").length} processed
+                            </span>
+                        </div>
+
+                        <div className="table-responsive">
+                            {loading ? (
+                                <div className="py-5 text-center text-muted">
+                                    <div className="spinner-border spinner-border-sm me-2" role="status"></div>
+                                    Loading processed documents...
                                 </div>
-                            </div>
-                            <div className="modal-footer border-top-0 pt-0">
-                                <button type="button" className="btn btn-secondary border-0 small px-3.5 py-2" onClick={() => setPreviewDoc(null)} style={{ borderRadius: "8px", background: "#64748b" }}>Close</button>
-                            </div>
+                            ) : filteredDocs.filter(d => d.processingStatus === "COMPLETED" || d.processingStatus === "PROCESSING" || d.processingStatus === "PENDING" || d.processingStatus === "FAILED").length === 0 ? (
+                                <div className="py-5 text-center text-muted fs-7">
+                                    <FaFileSignature size={32} className="mb-2.5 text-slate-300" />
+                                    <p className="mb-0">No processed documents yet. Upload a .docx or .pdf file above to start processing.</p>
+                                </div>
+                            ) : (
+                                <table className="table align-middle table-hover mb-0">
+                                    <thead>
+                                        <tr className="text-slate-400 small" style={{ fontSize: "12px", borderBottom: "1.5px solid #f1f5f9" }}>
+                                            <th className="fw-semibold pb-2">Document Name</th>
+                                            <th className="fw-semibold pb-2">Size</th>
+                                            <th className="fw-semibold pb-2">Processing Status</th>
+                                            <th className="fw-semibold pb-2 text-end">Download</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {filteredDocs
+                                            .filter(d => d.processingStatus === "COMPLETED" || d.processingStatus === "PROCESSING" || d.processingStatus === "PENDING" || d.processingStatus === "FAILED")
+                                            .map((doc) => (
+                                            <tr key={"proc-" + doc.id} style={{ borderBottom: "1px solid #f1f5f9" }}>
+                                                <td className="py-2.5">
+                                                    <div className="d-flex align-items-center gap-2.5">
+                                                        {doc.name.toLowerCase().endsWith(".pdf") ? (
+                                                            <div className="p-2 rounded-2 bg-danger-subtle text-danger">
+                                                                <FaFilePdf size={16} />
+                                                            </div>
+                                                        ) : (
+                                                            <div className="p-2 rounded-2" style={{ background: "#dcfce7", color: "#16a34a" }}>
+                                                                <FaFileWord size={16} />
+                                                            </div>
+                                                        )}
+                                                        <div>
+                                                            <span className="fw-semibold text-slate-800 d-block small" style={{ maxWidth: "300px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                                                                {doc.name}
+                                                            </span>
+                                                            <span className="text-muted" style={{ fontSize: "10px" }}>{doc.date}</span>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td className="py-2.5 small text-slate-600">{doc.size}</td>
+                                                <td className="py-2.5">{getStatusBadge(doc.processingStatus)}</td>
+                                                <td className="py-2.5 text-end">
+                                                    {doc.processingStatus === "COMPLETED" ? (
+                                                        <button 
+                                                            onClick={() => downloadProcessedDocument(doc.id, doc.name)}
+                                                            className="btn btn-sm d-inline-flex align-items-center gap-1.5 border-0 px-3 py-1.5"
+                                                            style={{ background: "#dcfce7", color: "#16a34a", borderRadius: "6px", fontSize: "12px", fontWeight: 600 }}
+                                                            title="Download Processed File"
+                                                        >
+                                                            <FaDownload size={11} /> Download
+                                                        </button>
+                                                    ) : doc.processingStatus === "FAILED" ? (
+                                                        <span className="text-muted small">—</span>
+                                                    ) : (
+                                                        <span className="text-muted small d-inline-flex align-items-center gap-1">
+                                                            <FaCog size={10} className="animate-spin" /> Processing…
+                                                        </span>
+                                                    )}
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            )}
                         </div>
                     </div>
                 </div>
-            )}
+            </div>
+
             
             <style>{`
                 @keyframes spin {

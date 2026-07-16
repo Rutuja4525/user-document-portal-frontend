@@ -74,7 +74,7 @@ function SetupCompany() {
                         <FaBuilding className="text-primary" size={28} />
                     </div>
                     <h3 className="fw-bold text-dark mb-2">Set Up Organization</h3>
-                    <p className="text-muted small">Welcome, {user?.fullName}! Create or link your Property Management Company account to start uploading lease agreements.</p>
+                    <p className="text-muted small">Welcome, {user?.fullName}!</p>
                 </div>
 
                 {error && (
@@ -104,9 +104,7 @@ function SetupCompany() {
                                 <option key={index} value={company} />
                             ))}
                         </datalist>
-                        <div className="form-text text-muted small mt-2">
-                            Type a custom name to register a new tenant portal, or choose one of the existing companies from the database.
-                        </div>
+
                     </div>
 
                     <button
