@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { FaCloudUploadAlt, FaShieldAlt, FaFileContract, FaArrowRight, FaSignInAlt, FaUserPlus, FaFileSignature } from "react-icons/fa";
+import { FaShieldAlt, FaFileContract, FaSignInAlt, FaUserPlus } from "react-icons/fa";
 
 function Home() {
   const { user } = useAuth();
@@ -17,52 +17,22 @@ function Home() {
             <span className="text-primary" style={{ color: "#6366f1" }}>Processing Workspace</span>
           </h1>
           <p className="lead text-slate-600 mx-auto mb-4" style={{ maxWidth: "680px", fontSize: "16px" }}>
-            Upload Microsoft Word documents (.docx), automatically inject corporate tokens, and download ready-to-process files for direct import into Yardi.
+            Upload Microsoft Word documents (.docx), or Portable Document Format(.pdf) automatically inject corporate tokens, and download ready-to-process files for direct import into Yardi.
           </p>
 
           {/* Login/Register Actions for Guests */}
-          <div className="d-flex justify-content-center align-items-center gap-3 mt-2 mb-4">
-            {!user ? (
-              <>
-                <Link to="/login" className="btn btn-primary btn-lg px-4 d-flex align-items-center gap-2 border-0 shadow-sm" style={{ borderRadius: "8px", background: "#6366f1" }}>
-                  <FaSignInAlt size={16} />
-                  <span>Login to Portal</span>
-                </Link>
-                <Link to="/register" className="btn btn-outline-secondary btn-lg px-4 d-flex align-items-center gap-2 shadow-sm" style={{ borderRadius: "8px" }}>
-                  <FaUserPlus size={16} />
-                  <span>Create Account</span>
-                </Link>
-              </>
-            ) : (
-              <div className="p-3 bg-light rounded border border-slate-200 w-100 max-w-md mx-auto d-flex flex-column align-items-center gap-2">
-                <span className="fw-semibold text-slate-700">Logged in as <span className="text-primary">{user.fullName}</span> ({user.companyName})</span>
-                <div className="d-flex gap-2.5">
-                  <Link to="/documents" className="btn btn-primary btn-sm px-4" style={{ borderRadius: "6px", background: "#6366f1", border: "none" }}>Go to Documents</Link>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-
-        <div className="row g-4 mt-2 text-start">
-          {/* Document Vault Card */}
-          <div className="col-12">
-            <div className="corporate-accent-card d-flex flex-column justify-content-between p-4 border border-slate-200/60 rounded-4" style={{ background: "#f8fafc" }}>
-              <div>
-                <div className="corporate-icon-box p-2.5 rounded-3 bg-primary-subtle text-primary d-inline-block mb-3">
-                  <FaCloudUploadAlt size={24} />
-                </div>
-                <h5 className="fw-bold text-slate-800 mb-2">Original Documents</h5>
-                <p className="text-slate-600 small mb-4">
-                  Securely drag-and-drop or select Word and PDF documents. Preserves all original uploads safely in dedicated folders.
-                </p>
-              </div>
-              <Link to={user ? "/documents" : "/login"} className="btn btn-outline-primary w-100 text-center d-flex align-items-center justify-content-center gap-2 mt-auto border-0 bg-primary-subtle text-primary" style={{ borderRadius: "8px" }}>
-                <span>Access Documents</span>
-                <FaArrowRight size={12} />
+          {!user && (
+            <div className="d-flex justify-content-center align-items-center gap-3 mt-2 mb-4">
+              <Link to="/login" className="btn btn-primary btn-lg px-4 d-flex align-items-center gap-2 border-0 shadow-sm" style={{ borderRadius: "8px", background: "#6366f1" }}>
+                <FaSignInAlt size={16} />
+                <span>Login to Portal</span>
+              </Link>
+              <Link to="/register" className="btn btn-outline-secondary btn-lg px-4 d-flex align-items-center gap-2 shadow-sm" style={{ borderRadius: "8px" }}>
+                <FaUserPlus size={16} />
+                <span>Create Account</span>
               </Link>
             </div>
-          </div>
+          )}
         </div>
 
         {/* Decorative Trust Badge & Information Banner */}

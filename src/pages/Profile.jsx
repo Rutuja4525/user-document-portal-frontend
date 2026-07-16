@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
-import { changePassword } from "../services/authService";
+import { changePassword, updateCompany } from "../services/authService";
 import { 
     FaUser, FaLock, FaBuilding, FaEnvelope, FaPhone, FaShieldAlt, FaSave, FaEye, FaEyeSlash 
 } from "react-icons/fa";
@@ -87,24 +87,42 @@ function Profile() {
         });
     };
 
-    const handleProfileSubmit = (e) => {
+    const handleProfileSubmit = async (e) => {
         e.preventDefault();
         setInfoLoading(true);
         setInfoMessage("");
 
-        // Simulate API save call (local storage updates)
-        setTimeout(() => {
-            if (user) {
-                const updatedUser = {
-                    ...user,
-                    fullName: profileData.fullName,
-                    phone: profileData.phone
+        try {
+            let updatedUser = { ...user };
+            
+            // If companyName has changed, call API
+            if (profileData.companyName.trim() !== user.companyName) {
+                const response = await updateCompany({
+                    companyName: profileData.companyName
+                });
+                
+                updatedUser = {
+                    ...updatedUser,
+                    token: response.data.token,
+                    companyName: response.data.companyName
                 };
-                login(updatedUser); // Update context & local storage
-                setInfoMessage("✅ Profile information updated successfully!");
             }
+
+            // Update user profile info locally (fullName, phone) as simulated before
+            updatedUser = {
+                ...updatedUser,
+                fullName: profileData.fullName,
+                phone: profileData.phone
+            };
+
+            login(updatedUser); // Update context & local storage
+            setInfoMessage("✅ Profile information updated successfully!");
+        } catch (err) {
+            console.error("Profile update failed:", err);
+            setInfoMessage("❌ " + (err.response?.data?.message || "Failed to update profile. Please try again."));
+        } finally {
             setInfoLoading(false);
-        }, 800);
+        }
     };
 
     const handlePasswordSubmit = async (e) => {
@@ -175,16 +193,19 @@ function Profile() {
 
                         <form onSubmit={handleProfileSubmit}>
                             <div className="mb-3">
-                                <label className="form-label small fw-semibold text-slate-700">Company Name (Read-Only)</label>
+                                <label className="form-label small fw-semibold text-slate-700">Company Name</label>
                                 <div className="input-group">
-                                    <span className="input-group-text bg-light border-end-0 text-slate-400">
+                                    <span className="input-group-text bg-white border-end-0 text-slate-400">
                                         <FaBuilding size={14} />
                                     </span>
                                     <input 
                                         type="text" 
-                                        className="form-control bg-light border-start-0" 
+                                        name="companyName"
+                                        className="form-control border-start-0" 
                                         value={profileData.companyName} 
-                                        disabled 
+                                        onChange={handleProfileChange}
+                                        required
+                                        style={{ outline: "none", boxShadow: "none" }}
                                     />
                                 </div>
                             </div>
@@ -208,7 +229,7 @@ function Profile() {
                             </div>
 
                             <div className="mb-3">
-                                <label className="form-label small fw-semibold text-slate-700">Email Address (Read-Only)</label>
+                                <label className="form-label small fw-semibold text-slate-700">Email Address</label>
                                 <div className="input-group">
                                     <span className="input-group-text bg-light border-end-0 text-slate-400">
                                         <FaEnvelope size={14} />

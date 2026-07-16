@@ -20,8 +20,6 @@ function Documents() {
     
     // Form & Search states
     const [searchTerm, setSearchTerm] = useState("");
-    const [categoryFilter, setCategoryFilter] = useState("All");
-    const [selectedCategory, setSelectedCategory] = useState("Lease Agreement");
     const [selectedFile, setSelectedFile] = useState(null);
 
     // Preview Modal state
@@ -80,8 +78,8 @@ function Documents() {
             showToast("Only Microsoft Word documents (.doc, .docx) and PDF files (.pdf) are allowed.", "error");
             return;
         }
-        if (file.size > 5 * 1024 * 1024) {
-            showToast("File size exceeds the 5MB limit. Please upload a smaller file.", "error");
+        if (file.size > 100 * 1024 * 1024) {
+            showToast("File size exceeds the 100MB limit. Please upload a smaller file.", "error");
             return;
         }
         setSelectedFile(file);
@@ -102,7 +100,7 @@ function Documents() {
         }, 200);
 
         try {
-            await uploadDocument(selectedFile, selectedCategory);
+            await uploadDocument(selectedFile, "Other Documents");
             clearInterval(progressInterval);
             setUploadProgress(100);
             showToast("Document uploaded successfully!", "success");
@@ -139,9 +137,7 @@ function Documents() {
 
     // Filter documents
     const filteredDocs = documents.filter((doc) => {
-        const matchesSearch = doc.name.toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesCategory = categoryFilter === "All" || doc.category === categoryFilter;
-        return matchesSearch && matchesCategory;
+        return doc.name.toLowerCase().includes(searchTerm.toLowerCase());
     });
 
     const getStatusBadge = (status) => {
@@ -156,7 +152,7 @@ function Documents() {
                 <div className="col-12 col-lg-4">
                     <div className="card border-0 shadow-sm p-4 bg-white" style={{ borderRadius: "16px", position: "sticky", top: "20px" }}>
                         <h5 className="fw-bold text-dark mb-1">Upload Document</h5>
-                        <p className="text-muted small mb-4">Upload Microsoft Word (.docx) or PDF files. Maximum size 5MB.</p>
+                        <p className="text-muted small mb-4">Upload Microsoft Word (.docx) or PDF files. Maximum size 100MB.</p>
 
                         <form onSubmit={handleUploadSubmit}>
                             {/* Drag and Drop Zone */}
@@ -192,23 +188,7 @@ function Documents() {
                                 </div>
                             </div>
 
-                            {/* Category Select */}
-                            <div className="mb-4">
-                                <label className="form-label small fw-semibold text-slate-700">Document Category</label>
-                                <select 
-                                    className="form-select border-slate-200" 
-                                    value={selectedCategory} 
-                                    onChange={(e) => setSelectedCategory(e.target.value)}
-                                    style={{ borderRadius: "8px" }}
-                                >
-                                    <option value="Lease Agreement">Lease Agreement</option>
-                                    <option value="Rental Application">Rental Application</option>
-                                    <option value="Addendum">Addendum</option>
-                                    <option value="Management Agreement">Management Agreement</option>
-                                    <option value="Vendor Contract">Vendor Contract</option>
-                                    <option value="Other Documents">Other Documents</option>
-                                </select>
-                            </div>
+
 
                             {/* Upload Progress Bar */}
                             {uploading && (
@@ -263,9 +243,9 @@ function Documents() {
                             </button>
                         </div>
 
-                        {/* Search & Filter Controls */}
+                        {/* Search Control */}
                         <div className="row g-2 mb-4">
-                            <div className="col-12 col-md-7">
+                            <div className="col-12">
                                 <div className="input-group">
                                     <span className="input-group-text bg-white border-end-0 text-slate-400">
                                         <FaSearch size={13} />
@@ -279,21 +259,6 @@ function Documents() {
                                         style={{ outline: "none", boxShadow: "none" }}
                                     />
                                 </div>
-                            </div>
-                            <div className="col-12 col-md-5">
-                                <select 
-                                    className="form-select text-slate-700"
-                                    value={categoryFilter}
-                                    onChange={(e) => setCategoryFilter(e.target.value)}
-                                >
-                                    <option value="All">All Categories</option>
-                                    <option value="Lease Agreement">Lease Agreement</option>
-                                    <option value="Rental Application">Rental Application</option>
-                                    <option value="Addendum">Addendum</option>
-                                    <option value="Management Agreement">Management Agreement</option>
-                                    <option value="Vendor Contract">Vendor Contract</option>
-                                    <option value="Other Documents">Other Documents</option>
-                                </select>
                             </div>
                         </div>
 
@@ -314,7 +279,6 @@ function Documents() {
                                     <thead>
                                         <tr className="text-slate-400 small" style={{ fontSize: "12px", borderBottom: "1.5px solid #f1f5f9" }}>
                                             <th className="fw-semibold pb-2">Document Name</th>
-                                            <th className="fw-semibold pb-2">Category</th>
                                             <th className="fw-semibold pb-2">Size</th>
                                             <th className="fw-semibold pb-2">Status</th>
                                             <th className="fw-semibold pb-2 text-end">Actions</th>
@@ -336,7 +300,6 @@ function Documents() {
                                                         </div>
                                                     </div>
                                                 </td>
-                                                <td className="py-2.5 small text-slate-600">{doc.category}</td>
                                                 <td className="py-2.5 small text-slate-600">{doc.size}</td>
                                                 <td className="py-2.5">{getStatusBadge(doc.status)}</td>
                                                 <td className="py-2.5 text-end">
@@ -392,7 +355,6 @@ function Documents() {
                                     <div className="col-12 col-md-12">
                                         <div className="p-3 bg-light rounded-3" style={{ fontSize: "13px" }}>
                                             <p className="mb-2.5"><strong>File Name:</strong> <span className="text-slate-800 d-block text-truncate">{previewDoc.name}</span></p>
-                                            <p className="mb-2.5"><strong>Category:</strong> <span className="text-slate-800 d-block">{previewDoc.category}</span></p>
                                             <p className="mb-2.5"><strong>File Size:</strong> <span className="text-slate-800 d-block">{previewDoc.size}</span></p>
                                             <p className="mb-2.5"><strong>Upload Date:</strong> <span className="text-slate-800 d-block"><FaCalendarAlt className="me-1.5 text-muted" />{previewDoc.date}</span></p>
                                             <p className="mb-0"><strong>S3 Location:</strong> <span className="text-slate-800 d-block text-truncate" title={previewDoc.s3Key}><FaHdd className="me-1.5 text-muted" />{previewDoc.s3Key}</span></p>
