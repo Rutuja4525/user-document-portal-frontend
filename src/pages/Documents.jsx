@@ -131,13 +131,14 @@ function Documents() {
         }
     };
 
-    const handleDelete = async (id) => {
-        if (window.confirm("Are you sure you want to delete this document?")) {
+    const handleDelete = async (id, type) => {
+        const isProcessed = type === "processed";
+        const docTypeName = isProcessed ? "processed document" : "original document";
+        if (window.confirm(`Are you sure you want to delete this ${docTypeName}?`)) {
             try {
-                await deleteDocument(id);
+                await deleteDocument(id, type);
                 showToast("Document deleted successfully.", "success");
                 fetchDocs();
-
             } catch (error) {
                 console.error("Deletion failed", error);
                 showToast("Failed to delete document", "error");
@@ -149,6 +150,9 @@ function Documents() {
     const filteredDocs = documents.filter((doc) => {
         return doc.name.toLowerCase().includes(searchTerm.toLowerCase());
     });
+
+    const activeOriginalDocs = filteredDocs.filter(d => !d.originalDeleted);
+    const activeProcessedDocs = filteredDocs.filter(d => !d.processedDeleted && (d.processingStatus === "COMPLETED" || d.processingStatus === "PROCESSING" || d.processingStatus === "PENDING" || d.processingStatus === "FAILED"));
 
     const getStatusBadge = (status) => {
         switch (status) {
@@ -254,7 +258,7 @@ function Documents() {
                                     </>
                                 ) : (
                                     <>
-                                        <FaCloudUploadAlt /> Upload Document
+                                        <FaCloudUploadAlt /> Upload and Process Document
                                     </>
                                 )}
                             </button>
@@ -301,7 +305,7 @@ function Documents() {
                                     <div className="spinner-border spinner-border-sm me-2" role="status"></div>
                                     Loading workspace documents...
                                 </div>
-                            ) : filteredDocs.length === 0 ? (
+                            ) : activeOriginalDocs.length === 0 ? (
                                 <div className="py-5 text-center text-muted fs-7">
                                     <FaFileAlt size={32} className="mb-2.5 text-slate-300" />
                                     <p className="mb-0">No documents in repository matching the filter.</p>
@@ -317,7 +321,7 @@ function Documents() {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {filteredDocs.map((doc) => (
+                                        {activeOriginalDocs.map((doc) => (
                                             <tr key={doc.id} style={{ borderBottom: "1px solid #f1f5f9" }}>
                                                 <td className="py-2.5">
                                                     <div className="d-flex align-items-center gap-2.5">
@@ -352,7 +356,7 @@ function Documents() {
                                                         </button>
 
                                                         <button 
-                                                            onClick={() => handleDelete(doc.id)}
+                                                            onClick={() => handleDelete(doc.id, "original")}
                                                             className="btn btn-sm btn-light border-0 p-1.5 text-danger"
                                                             title="Delete Document"
                                                         >
@@ -383,7 +387,7 @@ function Documents() {
                                 <p className="text-muted mb-0 small">Macro-processed documents ready for Yardi import</p>
                             </div>
                             <span className="badge bg-success-subtle text-success border border-success-subtle px-3 py-2" style={{ fontSize: "12px" }}>
-                                {filteredDocs.filter(d => d.processingStatus === "COMPLETED").length} processed
+                                {activeProcessedDocs.filter(d => d.processingStatus === "COMPLETED").length} processed
                             </span>
                         </div>
 
@@ -393,7 +397,7 @@ function Documents() {
                                     <div className="spinner-border spinner-border-sm me-2" role="status"></div>
                                     Loading processed documents...
                                 </div>
-                            ) : filteredDocs.filter(d => d.processingStatus === "COMPLETED" || d.processingStatus === "PROCESSING" || d.processingStatus === "PENDING" || d.processingStatus === "FAILED").length === 0 ? (
+                            ) : activeProcessedDocs.length === 0 ? (
                                 <div className="py-5 text-center text-muted fs-7">
                                     <FaFileSignature size={32} className="mb-2.5 text-slate-300" />
                                     <p className="mb-0">No processed documents yet. Upload a .docx or .pdf file above to start processing.</p>
@@ -409,19 +413,17 @@ function Documents() {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {filteredDocs
-                                            .filter(d => d.processingStatus === "COMPLETED" || d.processingStatus === "PROCESSING" || d.processingStatus === "PENDING" || d.processingStatus === "FAILED")
-                                            .map((doc) => (
+                                        {activeProcessedDocs.map((doc) => (
                                             <tr key={"proc-" + doc.id} style={{ borderBottom: "1px solid #f1f5f9" }}>
                                                 <td className="py-2.5">
                                                     <div className="d-flex align-items-center gap-2.5">
                                                         {doc.name.toLowerCase().endsWith(".pdf") ? (
                                                             <div className="p-2 rounded-2 bg-danger-subtle text-danger">
-                                                                <FaFilePdf size={16} />
+                                                                 <FaFilePdf size={16} />
                                                             </div>
                                                         ) : (
                                                             <div className="p-2 rounded-2" style={{ background: "#dcfce7", color: "#16a34a" }}>
-                                                                <FaFileWord size={16} />
+                                                                 <FaFileWord size={16} />
                                                             </div>
                                                         )}
                                                         <div>

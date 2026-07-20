@@ -15,7 +15,10 @@ export const uploadDocument = (file, category) => {
     });
 };
 
-export const deleteDocument = (id) => axios.delete(`${BASE_URL}/documents/${id}`);
+export const deleteDocument = (id, type) => {
+    const url = type ? `${BASE_URL}/documents/${id}?type=${type}` : `${BASE_URL}/documents/${id}`;
+    return axios.delete(url);
+};
 
 export const downloadDocument = async (id, name) => {
     const response = await axios.get(`${BASE_URL}/documents/${id}/download`, {
