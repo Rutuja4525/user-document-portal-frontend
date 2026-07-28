@@ -14,6 +14,7 @@ import Register from "./pages/Register";
 import Documents from "./pages/Documents";
 import Profile from "./pages/Profile";
 import SetupCompany from "./pages/SetupCompany";
+import UploadConfiguration from "./pages/UploadConfiguration";
 
 function App() {
   return (
@@ -41,6 +42,15 @@ function App() {
               element={
                 <ProtectedRoute>
                   <Documents />
+                </ProtectedRoute>
+              } 
+            />
+
+            <Route 
+              path="/upload-configuration" 
+              element={
+                <ProtectedRoute>
+                  <UploadConfiguration />
                 </ProtectedRoute>
               } 
             />

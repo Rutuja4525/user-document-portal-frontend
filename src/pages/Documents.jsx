@@ -274,9 +274,6 @@ function Documents() {
                                 <h5 className="fw-bold text-dark mb-1">Document Repository</h5>
                                 <p className="text-muted mb-0 small">Secure storage and extraction workspace</p>
                             </div>
-                            <button onClick={fetchDocs} className="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1.5" style={{ borderRadius: "6px" }}>
-                                <FaSyncAlt className={loading ? "animate-spin" : ""} style={{ animation: loading ? "spin 1.5s linear infinite" : "none" }} /> Refresh
-                            </button>
                         </div>
 
                         {/* Search Control */}
