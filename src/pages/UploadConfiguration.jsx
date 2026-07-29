@@ -1,5 +1,5 @@
-import { useState, useRef } from "react";
-import { uploadConfiguration } from "../services/configurationService";
+import { useState, useRef, useEffect } from "react";
+import { uploadConfiguration, getConfigurationSummaries } from "../services/configurationService";
 import { useToast } from "../context/ToastContext";
 import { 
   FaCloudUploadAlt, 
@@ -7,7 +7,8 @@ import {
   FaFileCsv, 
   FaDatabase, 
   FaTable, 
-  FaCheckCircle
+  FaCheckCircle,
+  FaClock
 } from "react-icons/fa";
 
 function UploadConfiguration() {
@@ -19,7 +20,65 @@ function UploadConfiguration() {
   const [isDragging, setIsDragging] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
-  const [lastResult, setLastResult] = useState(null);
+
+  // Active Configuration State (persisted from backend)
+  const [configSummary, setConfigSummary] = useState(null);
+  const [loadingSummary, setLoadingSummary] = useState(true);
+
+  const formatDate = (dateValue) => {
+    if (!dateValue) return "N/A";
+    try {
+      let date;
+      if (Array.isArray(dateValue)) {
+        // Handle Spring Boot LocalDateTime array: [year, month, day, hour, minute, second]
+        const [year, month, day, hour = 0, minute = 0, second = 0] = dateValue;
+        date = new Date(year, month - 1, day, hour, minute, second);
+      } else if (typeof dateValue === "string") {
+        date = new Date(dateValue);
+      } else if (dateValue instanceof Date) {
+        date = dateValue;
+      } else {
+        return String(dateValue);
+      }
+
+      if (isNaN(date.getTime())) {
+        return String(dateValue);
+      }
+
+      return date.toLocaleString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: true,
+      });
+    } catch (e) {
+      return String(dateValue);
+    }
+  };
+
+  const fetchConfigurationSummary = async () => {
+    try {
+      setLoadingSummary(true);
+      const response = await getConfigurationSummaries();
+      if (response.data && response.data.length > 0) {
+        // Most recent configuration
+        setConfigSummary(response.data[0]);
+      } else {
+        setConfigSummary(null);
+      }
+    } catch (err) {
+      console.error("Failed to fetch configuration summary:", err);
+    } finally {
+      setLoadingSummary(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchConfigurationSummary();
+  }, []);
 
   const handleFileSelect = (file) => {
     if (!file) return;
@@ -31,7 +90,6 @@ function UploadConfiguration() {
     }
 
     setSelectedFile(file);
-    setLastResult(null);
   };
 
   const handleDragOver = (e) => {
@@ -80,8 +138,10 @@ function UploadConfiguration() {
       setUploadProgress(100);
 
       const result = response.data;
-      setLastResult(result);
       showToast(result.message || "Configuration uploaded successfully!", "success");
+
+      // Refresh active configuration summary from backend
+      await fetchConfigurationSummary();
 
       // Reset file selection
       setSelectedFile(null);
@@ -243,28 +303,44 @@ function UploadConfiguration() {
           </div>
         </div>
 
-        {/* Upload Summary / Results Banner */}
+        {/* Uploaded Configuration Details Card */}
         <div className="col-lg-6">
-          {lastResult ? (
-            <div className="card shadow-sm border-0 border-start border-4 border-success h-100">
-              <div className="card-header bg-success-subtle py-3 border-0">
-                <h5 className="card-title h6 mb-0 text-success font-weight-bold d-flex align-items-center gap-2">
-                  <FaCheckCircle size={18} /> Import Result
+          {loadingSummary ? (
+            <div className="card shadow-sm border-0 h-100 d-flex justify-content-center align-items-center p-4">
+              <div className="spinner-border text-primary" role="status">
+                <span className="visually-hidden">Loading configuration details...</span>
+              </div>
+            </div>
+          ) : configSummary ? (
+            <div className="card shadow-sm border-0 border-start border-4 border-primary h-100">
+              <div className="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+                <h5 className="card-title h6 mb-0 font-weight-bold text-slate-800 d-flex align-items-center gap-2">
+                  <FaDatabase className="text-primary" size={18} /> Active Configuration DB
                 </h5>
+                <span className="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">
+                  <FaCheckCircle className="me-1" /> Active
+                </span>
               </div>
               <div className="card-body p-4">
-                <p className="text-dark fw-semibold mb-3">{lastResult.message}</p>
                 <div className="row g-3">
-                  <div className="col-6">
-                    <div className="p-3 bg-light rounded text-center">
-                      <span className="d-block text-muted small">Uploaded DB Name</span>
-                      <span className="badge bg-primary fs-6 mt-1 px-3 py-1">{lastResult.dbName}</span>
+                  <div className="col-12">
+                    <div className="p-3 bg-light rounded border border-slate-100">
+                      <span className="d-block text-muted small fw-semibold text-uppercase mb-1">
+                        Database Name
+                      </span>
+                      <span className="fs-5 fw-bold text-primary text-break">
+                        {configSummary.dbName}
+                      </span>
                     </div>
                   </div>
-                  <div className="col-6">
-                    <div className="p-3 bg-light rounded text-center">
-                      <span className="d-block text-muted small">Imported Rows</span>
-                      <span className="badge bg-success fs-6 mt-1 px-3 py-1">{lastResult.rowCount} rows</span>
+                  <div className="col-12">
+                    <div className="p-3 bg-light rounded border border-slate-100">
+                      <span className="d-block text-muted small fw-semibold text-uppercase mb-1 d-flex align-items-center gap-1">
+                        <FaClock size={12} className="text-secondary" /> Upload Date & Time
+                      </span>
+                      <span className="fw-semibold text-dark">
+                        {formatDate(configSummary.lastUpdated)}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -273,10 +349,10 @@ function UploadConfiguration() {
           ) : (
             <div className="card shadow-sm border-0 bg-slate-50 border-dashed h-100 d-flex justify-content-center align-items-center p-4 text-center">
               <div className="py-4">
-                <FaTable size={48} className="text-slate-300 mb-3" />
-                <h6 className="fw-semibold text-slate-700">Configuration Format Guidelines</h6>
-                <p className="text-muted small max-w-md mx-auto mb-0" style={{ maxWidth: "340px" }}>
-                  Upload Excel or CSV files. Existing records for the user will be automatically replaced with the new imported dataset.
+                <FaDatabase size={48} className="text-slate-300 mb-3" />
+                <h6 className="fw-semibold text-slate-600">No Database Configuration Uploaded</h6>
+                <p className="text-muted small max-w-md mx-auto mb-0" style={{ maxWidth: "320px" }}>
+                  Upload an Excel or CSV file to import and set up your active configuration database.
                 </p>
               </div>
             </div>
@@ -288,3 +364,4 @@ function UploadConfiguration() {
 }
 
 export default UploadConfiguration;
+
