@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { uploadConfiguration, getConfigurationSummaries } from "../services/configurationService";
+import { uploadConfiguration, getConfigurationSummaries, deleteConfigurationByDbName } from "../services/configurationService";
 import { useToast } from "../context/ToastContext";
 import { 
   FaCloudUploadAlt, 
@@ -8,7 +8,8 @@ import {
   FaDatabase, 
   FaTable, 
   FaCheckCircle,
-  FaClock
+  FaClock,
+  FaTrash
 } from "react-icons/fa";
 
 function UploadConfiguration() {
@@ -21,8 +22,8 @@ function UploadConfiguration() {
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
 
-  // Active Configuration State (persisted from backend)
-  const [configSummary, setConfigSummary] = useState(null);
+  // Active Configurations State (persisted from backend)
+  const [configSummaries, setConfigSummaries] = useState([]);
   const [loadingSummary, setLoadingSummary] = useState(true);
 
   const formatDate = (dateValue) => {
@@ -63,16 +64,30 @@ function UploadConfiguration() {
     try {
       setLoadingSummary(true);
       const response = await getConfigurationSummaries();
-      if (response.data && response.data.length > 0) {
-        // Most recent configuration
-        setConfigSummary(response.data[0]);
+      if (response.data && Array.isArray(response.data)) {
+        setConfigSummaries(response.data);
       } else {
-        setConfigSummary(null);
+        setConfigSummaries([]);
       }
     } catch (err) {
-      console.error("Failed to fetch configuration summary:", err);
+      console.error("Failed to fetch configuration summaries:", err);
+      setConfigSummaries([]);
     } finally {
       setLoadingSummary(false);
+    }
+  };
+
+  const handleDeleteDb = async (dbName) => {
+    if (!window.confirm(`Are you sure you want to delete configuration data for database '${dbName}'?`)) {
+      return;
+    }
+    try {
+      await deleteConfigurationByDbName(dbName);
+      showToast(`Configuration for database '${dbName}' deleted successfully.`, "success");
+      await fetchConfigurationSummary();
+    } catch (err) {
+      console.error("Failed to delete configuration:", err);
+      showToast(err.response?.data?.message || "Failed to delete database configuration.", "error");
     }
   };
 
@@ -311,38 +326,42 @@ function UploadConfiguration() {
                 <span className="visually-hidden">Loading configuration details...</span>
               </div>
             </div>
-          ) : configSummary ? (
+          ) : configSummaries && configSummaries.length > 0 ? (
             <div className="card shadow-sm border-0 border-start border-4 border-primary h-100">
               <div className="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
                 <h5 className="card-title h6 mb-0 font-weight-bold text-slate-800 d-flex align-items-center gap-2">
-                  <FaDatabase className="text-primary" size={18} /> Active Configuration DB
+                  <FaDatabase className="text-primary" size={18} /> Active Configuration DBs
                 </h5>
                 <span className="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">
-                  <FaCheckCircle className="me-1" /> Active
+                  <FaCheckCircle className="me-1" /> {configSummaries.length} Active {configSummaries.length === 1 ? "DB" : "DBs"}
                 </span>
               </div>
-              <div className="card-body p-4">
-                <div className="row g-3">
-                  <div className="col-12">
-                    <div className="p-3 bg-light rounded border border-slate-100">
-                      <span className="d-block text-muted small fw-semibold text-uppercase mb-1">
-                        Database Name
-                      </span>
-                      <span className="fs-5 fw-bold text-primary text-break">
-                        {configSummary.dbName}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="col-12">
-                    <div className="p-3 bg-light rounded border border-slate-100">
-                      <span className="d-block text-muted small fw-semibold text-uppercase mb-1 d-flex align-items-center gap-1">
-                        <FaClock size={12} className="text-secondary" /> Upload Date & Time
-                      </span>
-                      <span className="fw-semibold text-dark">
-                        {formatDate(configSummary.lastUpdated)}
-                      </span>
-                    </div>
-                  </div>
+              <div className="card-body p-0" style={{ maxHeight: "500px", overflowY: "auto" }}>
+                <div className="table-responsive">
+                  <table className="table table-hover align-middle mb-0">
+                    <thead className="table-light">
+                      <tr>
+                        <th scope="col" className="py-3 px-4 text-slate-700 fw-semibold border-bottom">
+                          Database Name
+                        </th>
+                        <th scope="col" className="py-3 px-4 text-slate-700 fw-semibold border-bottom">
+                          Upload Date & Time
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {configSummaries.map((config) => (
+                        <tr key={config.dbName}>
+                          <td className="py-3 px-4 fw-bold text-primary">
+                            {config.dbName}
+                          </td>
+                          <td className="py-3 px-4 text-dark fw-medium">
+                            {formatDate(config.lastUpdated)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               </div>
             </div>
@@ -352,7 +371,7 @@ function UploadConfiguration() {
                 <FaDatabase size={48} className="text-slate-300 mb-3" />
                 <h6 className="fw-semibold text-slate-600">No Database Configuration Uploaded</h6>
                 <p className="text-muted small max-w-md mx-auto mb-0" style={{ maxWidth: "320px" }}>
-                  Upload an Excel or CSV file to import and set up your active configuration database.
+                  Upload an Excel or CSV file to import and set up your active configuration databases.
                 </p>
               </div>
             </div>
