@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { uploadConfiguration, getConfigurationSummaries, deleteConfigurationByDbName } from "../services/configurationService";
+import { uploadConfiguration, getConfigurationSummaries, deleteConfigurationByDbName, downloadPkgByDbName } from "../services/configurationService";
 import { useToast } from "../context/ToastContext";
 import { 
   FaCloudUploadAlt, 
@@ -9,7 +9,8 @@ import {
   FaTable, 
   FaCheckCircle,
   FaClock,
-  FaTrash
+  FaTrash,
+  FaDownload
 } from "react-icons/fa";
 
 function UploadConfiguration() {
@@ -25,6 +26,7 @@ function UploadConfiguration() {
   // Active Configurations State (persisted from backend)
   const [configSummaries, setConfigSummaries] = useState([]);
   const [loadingSummary, setLoadingSummary] = useState(true);
+  const [downloadingDb, setDownloadingDb] = useState(null);
 
   const formatDate = (dateValue) => {
     if (!dateValue) return "N/A";
@@ -88,6 +90,19 @@ function UploadConfiguration() {
     } catch (err) {
       console.error("Failed to delete configuration:", err);
       showToast(err.response?.data?.message || "Failed to delete database configuration.", "error");
+    }
+  };
+
+  const handleDownloadPkg = async (dbName) => {
+    try {
+      setDownloadingDb(dbName);
+      await downloadPkgByDbName(dbName);
+      showToast(`Package file for database '${dbName}' downloaded successfully.`, "success");
+    } catch (err) {
+      console.error("Failed to download PKG file:", err);
+      showToast(err.response?.data?.message || "Failed to download PKG file.", "error");
+    } finally {
+      setDownloadingDb(null);
     }
   };
 
@@ -175,7 +190,7 @@ function UploadConfiguration() {
   };
 
   return (
-    <div className="container py-4">
+    <div className="container-fluid px-4 py-4">
       {/* Page Header */}
       <div className="d-flex justify-content-between align-items-center mb-4">
         <div>
@@ -190,7 +205,7 @@ function UploadConfiguration() {
 
       <div className="row g-4">
         {/* Upload Form Card */}
-        <div className="col-lg-6">
+        <div className="col-lg-5">
           <div className="card shadow-sm border-0 h-100">
             <div className="card-header bg-white py-3 border-bottom">
               <h5 className="card-title h6 mb-0 font-weight-bold text-slate-800 d-flex align-items-center gap-2">
@@ -319,7 +334,7 @@ function UploadConfiguration() {
         </div>
 
         {/* Uploaded Configuration Details Card */}
-        <div className="col-lg-6">
+        <div className="col-lg-7">
           {loadingSummary ? (
             <div className="card shadow-sm border-0 h-100 d-flex justify-content-center align-items-center p-4">
               <div className="spinner-border text-primary" role="status">
@@ -336,7 +351,7 @@ function UploadConfiguration() {
                   <FaCheckCircle className="me-1" /> {configSummaries.length} Active {configSummaries.length === 1 ? "DB" : "DBs"}
                 </span>
               </div>
-              <div className="card-body p-0" style={{ maxHeight: "500px", overflowY: "auto" }}>
+              <div className="card-body p-0" style={{ maxHeight: "75vh", overflowY: "auto" }}>
                 <div className="table-responsive">
                   <table className="table table-hover align-middle mb-0">
                     <thead className="table-light">
@@ -346,6 +361,9 @@ function UploadConfiguration() {
                         </th>
                         <th scope="col" className="py-3 px-4 text-slate-700 fw-semibold border-bottom">
                           Upload Date & Time
+                        </th>
+                        <th scope="col" className="py-3 px-4 text-slate-700 fw-semibold border-bottom text-end">
+                          Actions
                         </th>
                       </tr>
                     </thead>
@@ -357,6 +375,37 @@ function UploadConfiguration() {
                           </td>
                           <td className="py-3 px-4 text-dark fw-medium">
                             {formatDate(config.lastUpdated)}
+                          </td>
+                          <td className="py-3 px-4 text-end">
+                            <div className="d-flex justify-content-end gap-2">
+                              <button
+                                type="button"
+                                className="btn btn-sm btn-outline-primary d-inline-flex align-items-center gap-1 fw-semibold px-3"
+                                onClick={() => handleDownloadPkg(config.dbName)}
+                                disabled={downloadingDb === config.dbName}
+                                title="Download PKG File"
+                              >
+                                {downloadingDb === config.dbName ? (
+                                  <>
+                                    <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                    <span>Downloading...</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <FaDownload size={13} />
+                                    <span>Download PKG</span>
+                                  </>
+                                )}
+                              </button>
+                              <button
+                                type="button"
+                                className="btn btn-sm btn-outline-danger d-inline-flex align-items-center px-2"
+                                onClick={() => handleDeleteDb(config.dbName)}
+                                title="Delete Database Configuration"
+                              >
+                                <FaTrash size={13} />
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       ))}

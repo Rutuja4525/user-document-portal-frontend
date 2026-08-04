@@ -27,3 +27,18 @@ export const getConfigurationByDbName = (dbName) => {
 export const deleteConfigurationByDbName = (dbName) => {
   return axios.delete(`${BASE_URL}/${encodeURIComponent(dbName)}`);
 };
+
+export const downloadPkgByDbName = async (dbName) => {
+  const response = await axios.get(`${BASE_URL}/download/${encodeURIComponent(dbName)}`, {
+    responseType: "blob",
+  });
+  const fileName = `ldp_config_${(dbName || "").toLowerCase()}.pkg`;
+  const url = window.URL.createObjectURL(new Blob([response.data]));
+  const link = document.createElement("a");
+  link.href = url;
+  link.setAttribute("download", fileName);
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  window.URL.revokeObjectURL(url);
+};
