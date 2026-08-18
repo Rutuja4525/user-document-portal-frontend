@@ -406,7 +406,7 @@ function Documents() {
                                             <th className="fw-semibold pb-2">Document Name</th>
                                             <th className="fw-semibold pb-2">Size</th>
                                             <th className="fw-semibold pb-2">Processing Status</th>
-                                            <th className="fw-semibold pb-2 text-end">Download</th>
+                                            <th className="fw-semibold pb-2 text-end">Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -434,22 +434,30 @@ function Documents() {
                                                 <td className="py-2.5 small text-slate-600">{doc.size}</td>
                                                 <td className="py-2.5">{getStatusBadge(doc.processingStatus)}</td>
                                                 <td className="py-2.5 text-end">
-                                                    {doc.processingStatus === "COMPLETED" ? (
+                                                    <div className="d-inline-flex align-items-center gap-2">
+                                                        {doc.processingStatus === "COMPLETED" ? (
+                                                            <button 
+                                                                onClick={() => downloadProcessedDocument(doc.id, doc.name)}
+                                                                className="btn btn-sm d-inline-flex align-items-center gap-1.5 border-0 px-3 py-1.5"
+                                                                style={{ background: "#dcfce7", color: "#16a34a", borderRadius: "6px", fontSize: "12px", fontWeight: 600 }}
+                                                                title="Download Processed File"
+                                                            >
+                                                                <FaDownload size={11} /> Download
+                                                            </button>
+                                                        ) : doc.processingStatus === "PROCESSING" || doc.processingStatus === "PENDING" ? (
+                                                            <span className="text-muted small d-inline-flex align-items-center gap-1">
+                                                                <FaCog size={10} className="animate-spin" /> Processing…
+                                                            </span>
+                                                        ) : null}
+
                                                         <button 
-                                                            onClick={() => downloadProcessedDocument(doc.id, doc.name)}
-                                                            className="btn btn-sm d-inline-flex align-items-center gap-1.5 border-0 px-3 py-1.5"
-                                                            style={{ background: "#dcfce7", color: "#16a34a", borderRadius: "6px", fontSize: "12px", fontWeight: 600 }}
-                                                            title="Download Processed File"
+                                                            onClick={() => handleDelete(doc.id, "processed")}
+                                                            className="btn btn-sm btn-light border-0 p-1.5 text-danger"
+                                                            title="Delete Processed Record"
                                                         >
-                                                            <FaDownload size={11} /> Download
+                                                            <FaTrash size={12} />
                                                         </button>
-                                                    ) : doc.processingStatus === "FAILED" ? (
-                                                        <span className="text-muted small">—</span>
-                                                    ) : (
-                                                        <span className="text-muted small d-inline-flex align-items-center gap-1">
-                                                            <FaCog size={10} className="animate-spin" /> Processing…
-                                                        </span>
-                                                    )}
+                                                    </div>
                                                 </td>
                                             </tr>
                                         ))}
