@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
 import { useToast } from "../context/ToastContext";
 import { 
-    getDocuments, uploadDocument, deleteDocument, downloadDocument, downloadProcessedDocument 
+    getDocuments, uploadDocument, deleteDocument, downloadDocument, downloadProcessedDocument, downloadTokensExcel 
 } from "../services/documentService";
 import { 
     FaFileAlt, FaSearch, FaTrash, FaCloudUploadAlt, FaFileWord, FaFilePdf, FaDownload, 
-    FaSpinner, FaFileSignature, FaSyncAlt, FaFileCsv, FaCheckCircle, FaCog, FaTimesCircle
+    FaSpinner, FaFileSignature, FaSyncAlt, FaFileCsv, FaCheckCircle, FaCog, FaTimesCircle, FaFileExcel
 } from "react-icons/fa";
 
 function Documents() {
@@ -17,10 +17,24 @@ function Documents() {
     const [uploading, setUploading] = useState(false);
     const [uploadProgress, setUploadProgress] = useState(0);
     const [dragActive, setDragActive] = useState(false);
+    const [downloadingTokens, setDownloadingTokens] = useState(false);
     
     // Form & Search states
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedFile, setSelectedFile] = useState(null);
+
+    const handleDownloadTokensExcel = async () => {
+        setDownloadingTokens(true);
+        try {
+            await downloadTokensExcel();
+            showToast("Token list report downloaded successfully!", "success");
+        } catch (error) {
+            console.error("Failed to download token list report", error);
+            showToast(error.response?.data?.message || "Failed to download token report. Ensure Word (.docx) templates are uploaded.", "error");
+        } finally {
+            setDownloadingTokens(false);
+        }
+    };
 
 
 
@@ -259,6 +273,24 @@ function Documents() {
                                 ) : (
                                     <>
                                         <FaCloudUploadAlt /> Upload and Process Document
+                                    </>
+                                )}
+                            </button>
+
+                            <button 
+                                type="button" 
+                                onClick={handleDownloadTokensExcel}
+                                className="btn btn-outline-success w-100 py-2.5 fw-semibold d-flex align-items-center justify-content-center gap-2 mt-3" 
+                                style={{ borderRadius: "8px" }}
+                                disabled={downloadingTokens}
+                            >
+                                {downloadingTokens ? (
+                                    <>
+                                        <FaSpinner className="animate-spin" /> Generating Excel...
+                                    </>
+                                ) : (
+                                    <>
+                                        <FaFileExcel size={16} /> Download Token List (Excel)
                                     </>
                                 )}
                             </button>

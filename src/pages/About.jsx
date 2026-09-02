@@ -4,7 +4,7 @@ function About() {
       <h2>About Us</h2>
 
       <p>
-        This Lease Document Upload Portal helps users
+        This Self-Service Portal helps users
         and administrators upload and manage documents securely.
       </p>
 

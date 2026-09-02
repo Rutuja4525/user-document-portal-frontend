@@ -206,10 +206,10 @@ function Register() {
                         style={{ height: "65px", width: "auto" }} 
                     />
                     <h1 className="fw-extrabold text-white mb-2" style={{ fontSize: "2.6rem", letterSpacing: "-1px" }}>
-                        User Document Upload
+                        Self-Service Portal
                     </h1>
                     <h2 className="fs-5 text-blue-400 fw-semibold mb-3">
-                        Secure User Document Upload Portal
+                        Secure Self-Service Portal
                     </h2>
                     <p className="text-white-50 mx-auto" style={{ maxWidth: "450px", fontSize: "15px", lineHeight: "1.6" }}>
                         Upload, verify, and manage documents securely from one unified platform.

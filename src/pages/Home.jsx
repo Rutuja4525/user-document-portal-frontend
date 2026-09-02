@@ -10,7 +10,7 @@ function Home() {
       <div className="corporate-glass-panel text-center p-5 mx-auto border border-slate-200/80 shadow-sm bg-white" style={{ maxWidth: "900px", borderRadius: "24px" }}>
         <div className="mb-4">
           <span className="badge px-3 py-2 text-uppercase mb-3" style={{ color: "#4f46e5", backgroundColor: "#e0e7ff", border: "1px solid #c7d2fe", letterSpacing: "1.5px", fontSize: "11px", fontWeight: "700" }}>
-            Secure Document Portal
+            Self-Service Portal
           </span>
           <h1 className="display-5 fw-extrabold text-slate-900 mb-3" style={{ letterSpacing: "-1.5px" }}>
             Word Document <br/>

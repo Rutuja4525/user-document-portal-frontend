@@ -139,10 +139,10 @@ function Login() {
                         style={{ height: "65px", width: "auto" }} 
                     />
                     <h1 className="fw-extrabold text-white mb-2" style={{ fontSize: "2.6rem", letterSpacing: "-1px" }}>
-                        Welcome to Lease Document Upload
+                        Welcome to Self-Service Portal
                     </h1>
                     <h2 className="fs-5 text-blue-400 fw-semibold mb-3">
-                        Secure Lease Document Upload Portal
+                        Secure Self-Service Portal
                     </h2>
                     <p className="text-white-50 mx-auto" style={{ maxWidth: "450px", fontSize: "15px", lineHeight: "1.6" }}>
                         Upload, verify, and manage documents securely from one unified platform.
@@ -248,7 +248,7 @@ function Login() {
 
                     <div className="text-center mt-4 pt-2 border-top">
                         <p className="text-muted small mb-0">
-                            New to Lease Document Upload Portal?{" "}
+                            New to Self-Service Portal?{" "}
                             <Link to="/register" className="fw-bold text-decoration-none" style={{ color: "var(--primary)" }}>
                                 Create an account
                             </Link>

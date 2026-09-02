@@ -47,3 +47,18 @@ export const downloadProcessedDocument = async (id, name) => {
     link.remove();
     window.URL.revokeObjectURL(url);
 };
+
+export const downloadTokensExcel = async () => {
+    const response = await axios.get(`${BASE_URL}/documents/download-tokens-excel`, {
+        responseType: "blob"
+    });
+    const url = window.URL.createObjectURL(new Blob([response.data]));
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", "Template_Tokens_Report.xlsx");
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(url);
+};
+
