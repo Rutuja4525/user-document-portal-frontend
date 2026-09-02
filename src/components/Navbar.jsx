@@ -1,6 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { FaUserCircle, FaSignOutAlt, FaBuilding, FaFileAlt, FaBell, FaSearch, FaUser, FaDatabase } from "react-icons/fa";
+import { FaUserCircle, FaSignOutAlt, FaBuilding, FaFileAlt, FaBell, FaSearch, FaUser, FaDatabase, FaFileCode } from "react-icons/fa";
 
 function Navbar() {
   const { user, logout } = useAuth();
@@ -46,6 +46,11 @@ function Navbar() {
                 <li className="nav-item">
                   <Link className={`nav-link px-3 d-flex align-items-center gap-1.5 ${location.pathname === "/upload-configuration" ? "text-primary fw-bold" : "text-slate-600"}`} to="/upload-configuration">
                     <FaDatabase size={14} /> Upload Configuration
+                  </Link>
+                </li>
+                <li className="nav-item">
+                  <Link className={`nav-link px-3 d-flex align-items-center gap-1.5 ${location.pathname === "/upload-script" ? "text-primary fw-bold" : "text-slate-600"}`} to="/upload-script">
+                    <FaFileCode size={14} /> Upload Script
                   </Link>
                 </li>
                 <li className="nav-item">
