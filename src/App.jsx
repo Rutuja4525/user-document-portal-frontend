@@ -26,69 +26,69 @@ function App() {
           <Navbar />
 
           <div className="main-wrapper">
-          <Routes>
+            <Routes>
 
-            <Route path="/" element={<Home />} />
+              <Route path="/" element={<Home />} />
 
-            <Route path="/about" element={<About />} />
+              <Route path="/about" element={<About />} />
 
-            <Route path="/contact" element={<Contact />} />
+              <Route path="/contact" element={<Contact />} />
 
-            <Route path="/login" element={<Login />} />
+              <Route path="/login" element={<Login />} />
 
-            <Route path="/register" element={<Register />} />
+              <Route path="/register" element={<Register />} />
 
-            <Route 
-              path="/documents" 
-              element={
-                <ProtectedRoute>
-                  <Documents />
-                </ProtectedRoute>
-              } 
-            />
+              <Route
+                path="/documents"
+                element={
+                  <ProtectedRoute>
+                    <Documents />
+                  </ProtectedRoute>
+                }
+              />
 
-            <Route 
-              path="/upload-configuration" 
-              element={
-                <ProtectedRoute>
-                  <UploadConfiguration />
-                </ProtectedRoute>
-              } 
-            />
+              <Route
+                path="/upload-configuration"
+                element={
+                  <ProtectedRoute>
+                    <UploadConfiguration />
+                  </ProtectedRoute>
+                }
+              />
 
-            <Route 
-              path="/upload-script" 
-              element={
-                <ProtectedRoute>
-                  <UploadScript />
-                </ProtectedRoute>
-              } 
-            />
+              <Route
+                path="/upload-script"
+                element={
+                  <ProtectedRoute>
+                    <UploadScript />
+                  </ProtectedRoute>
+                }
+              />
 
-            <Route 
-              path="/profile" 
-              element={
-                <ProtectedRoute>
-                  <Profile />
-                </ProtectedRoute>
-              } 
-            />
+              <Route
+                path="/profile"
+                element={
+                  <ProtectedRoute>
+                    <Profile />
+                  </ProtectedRoute>
+                }
+              />
 
-            <Route 
-              path="/setup-company" 
-              element={
-                <ProtectedRoute>
-                  <SetupCompany />
-                </ProtectedRoute>
-              } 
-            />
+              <Route
+                path="/setup-company"
+                element={
+                  <ProtectedRoute>
+                    <SetupCompany />
+                  </ProtectedRoute>
+                }
+              />
 
-          </Routes>
-        </div>
+            </Routes>
+          </div>
 
-        <Footer />
+          <Footer />
 
-      </BrowserRouter>
+        </BrowserRouter>
       </ToastProvider>
     </AuthProvider>
   );
