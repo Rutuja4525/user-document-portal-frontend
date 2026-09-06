@@ -24,41 +24,57 @@ export const downloadDocument = async (id, name) => {
     const response = await axios.get(`${BASE_URL}/documents/${id}/download`, {
         responseType: "blob"
     });
-    const url = window.URL.createObjectURL(new Blob([response.data]));
+    const blob = new Blob([response.data], { type: response.headers["content-type"] || "application/octet-stream" });
+    const url = window.URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
     link.setAttribute("download", name);
     document.body.appendChild(link);
     link.click();
-    link.remove();
-    window.URL.revokeObjectURL(url);
+    setTimeout(() => {
+        if (document.body.contains(link)) {
+            document.body.removeChild(link);
+        }
+        window.URL.revokeObjectURL(url);
+    }, 200);
 };
 
 export const downloadProcessedDocument = async (id, name) => {
     const response = await axios.get(`${BASE_URL}/documents/${id}/download-processed`, {
         responseType: "blob"
     });
-    const url = window.URL.createObjectURL(new Blob([response.data]));
+    const blob = new Blob([response.data], { type: response.headers["content-type"] || "application/octet-stream" });
+    const url = window.URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.setAttribute("download", "processed_" + name);
+    const downloadName = name ? (name.startsWith("processed_") ? name : "processed_" + name) : "processed_document";
+    link.setAttribute("download", downloadName);
     document.body.appendChild(link);
     link.click();
-    link.remove();
-    window.URL.revokeObjectURL(url);
+    setTimeout(() => {
+        if (document.body.contains(link)) {
+            document.body.removeChild(link);
+        }
+        window.URL.revokeObjectURL(url);
+    }, 200);
 };
 
 export const downloadTokensExcel = async () => {
     const response = await axios.get(`${BASE_URL}/documents/download-tokens-excel`, {
         responseType: "blob"
     });
-    const url = window.URL.createObjectURL(new Blob([response.data]));
+    const blob = new Blob([response.data], { type: response.headers["content-type"] || "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+    const url = window.URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
     link.setAttribute("download", "Template_Tokens_Report.xlsx");
     document.body.appendChild(link);
     link.click();
-    link.remove();
-    window.URL.revokeObjectURL(url);
+    setTimeout(() => {
+        if (document.body.contains(link)) {
+            document.body.removeChild(link);
+        }
+        window.URL.revokeObjectURL(url);
+    }, 200);
 };
 

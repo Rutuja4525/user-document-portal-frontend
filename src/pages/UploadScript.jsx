@@ -147,8 +147,7 @@ function UploadScript() {
         {/* Left Column: Upload Form */}
         <div className="col-12 col-lg-5">
           <div className="card shadow-sm border-0 bg-white p-4" style={{ borderRadius: "16px", position: "sticky", top: "20px" }}>
-            <h5 className="fw-bold text-dark mb-1">Upload Script File</h5>
-            <p className="text-muted small mb-4">Select or drag & drop Yardi script files to analyze template references.</p>
+            <h5 className="fw-bold text-dark mb-3">Upload Script File</h5>
 
             <form onSubmit={handleUploadSubmit}>
               {/* Drag & Drop Zone */}
@@ -212,23 +211,6 @@ function UploadScript() {
                   )}
                 </button>
 
-                <button
-                  type="button"
-                  onClick={handleDownloadScriptTemplatesExcel}
-                  className="btn btn-outline-success w-100 py-2.5 fw-semibold d-flex align-items-center justify-content-center gap-2 mt-2"
-                  style={{ borderRadius: "8px" }}
-                  disabled={downloadingTemplates}
-                >
-                  {downloadingTemplates ? (
-                    <>
-                      <FaSpinner className="animate-spin" /> Generating Excel Report...
-                    </>
-                  ) : (
-                    <>
-                      <FaFileExcel size={16} /> Download Template List (Excel)
-                    </>
-                  )}
-                </button>
               </div>
             </form>
           </div>
@@ -237,16 +219,32 @@ function UploadScript() {
         {/* Right Column: Uploaded Script Repository Workspace */}
         <div className="col-12 col-lg-7">
           <div className="card shadow-sm border-0 bg-white p-4" style={{ borderRadius: "16px" }}>
-            <div className="d-flex justify-content-between align-items-center mb-4">
+            <div className="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
               <div>
                 <h5 className="fw-bold text-dark mb-1 d-flex align-items-center gap-2">
                   <FaDatabase className="text-indigo-500" style={{ color: "#6366f1" }} /> Uploaded Script Repository
                 </h5>
                 <p className="text-muted mb-0 small">Overview of uploaded Yardi lease scripts and extracted template references</p>
               </div>
-              <span className="badge bg-indigo-subtle text-indigo px-3 py-2 fw-semibold" style={{ backgroundColor: "#e0e7ff", color: "#4338ca", borderRadius: "20px" }}>
-                {uploadedScripts.length} File{uploadedScripts.length !== 1 ? "s" : ""}
-              </span>
+              <div>
+                <button
+                  type="button"
+                  onClick={handleDownloadScriptTemplatesExcel}
+                  className="btn btn-outline-success btn-sm px-3 py-2 fw-semibold d-flex align-items-center gap-2"
+                  style={{ borderRadius: "8px", fontSize: "12px" }}
+                  disabled={downloadingTemplates}
+                >
+                  {downloadingTemplates ? (
+                    <>
+                      <FaSpinner className="animate-spin" /> Generating...
+                    </>
+                  ) : (
+                    <>
+                      <FaFileExcel size={14} /> Download Template List (Excel)
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
 
             {uploadedScripts.length > 0 ? (
@@ -257,7 +255,6 @@ function UploadScript() {
                       <th className="fw-semibold pb-2">Script Name</th>
                       <th className="fw-semibold pb-2">File Size</th>
                       <th className="fw-semibold pb-2">Upload Time</th>
-                      <th className="fw-semibold pb-2">Status</th>
                       <th className="fw-semibold pb-2 text-end">Action</th>
                     </tr>
                   </thead>
@@ -272,11 +269,6 @@ function UploadScript() {
                         </td>
                         <td className="small text-muted">{script.size}</td>
                         <td className="small text-muted">{script.uploadedAt}</td>
-                        <td>
-                          <span className="badge bg-success-subtle text-success border border-success-subtle px-2 py-0.5" style={{ fontSize: "11px" }}>
-                            <FaCheckCircle size={10} className="me-1" /> Ready
-                          </span>
-                        </td>
                         <td className="text-end">
                           <button
                             onClick={() => handleDeleteScript(script.name)}
