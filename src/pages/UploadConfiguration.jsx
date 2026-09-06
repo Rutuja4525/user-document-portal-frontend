@@ -347,9 +347,6 @@ function UploadConfiguration() {
                 <h5 className="card-title h6 mb-0 font-weight-bold text-slate-800 d-flex align-items-center gap-2">
                   <FaDatabase className="text-primary" size={18} /> Active Configuration DBs
                 </h5>
-                <span className="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">
-                  <FaCheckCircle className="me-1" /> {configSummaries.length} Active {configSummaries.length === 1 ? "DB" : "DBs"}
-                </span>
               </div>
               <div className="card-body p-0" style={{ maxHeight: "75vh", overflowY: "auto" }}>
                 <div className="table-responsive">

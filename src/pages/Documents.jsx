@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useToast } from "../context/ToastContext";
 import { 
-    getDocuments, uploadDocument, deleteDocument, downloadProcessedDocument, downloadTokensExcel 
+    getDocuments, uploadDocument, deleteDocument, downloadProcessedDocument, downloadTokensExcel, uploadTokenMappingExcel 
 } from "../services/documentService";
 import { 
     FaSearch, FaTrash, FaCloudUploadAlt, FaFileWord, FaFilePdf, FaDownload, 
@@ -11,6 +11,7 @@ import {
 function Documents() {
     const { showToast } = useToast();
     const fileInputRef = useRef(null);
+    const tokenMappingInputRef = useRef(null);
     
     // Core states
     const [documents, setDocuments] = useState([]);
@@ -19,11 +20,40 @@ function Documents() {
     const [uploadProgress, setUploadProgress] = useState(0);
     const [dragActive, setDragActive] = useState(false);
     const [downloadingTokens, setDownloadingTokens] = useState(false);
+    const [uploadingTokenMapping, setUploadingTokenMapping] = useState(false);
     const [downloadingDocId, setDownloadingDocId] = useState(null);
     
     // Form & Search states
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedFile, setSelectedFile] = useState(null);
+
+    const handleUploadTokenMappingFile = async (file) => {
+        if (!file) return;
+        const fname = file.name.toLowerCase();
+        if (!fname.endsWith(".xlsx") && !fname.endsWith(".xls") && !fname.endsWith(".csv")) {
+            showToast("Please upload an Excel mapping file (.xlsx or .xls).", "error");
+            return;
+        }
+
+        setUploadingTokenMapping(true);
+        try {
+            const response = await uploadTokenMappingExcel(file);
+            showToast(response.data || "Token mapping applied successfully! Document tokens replaced.", "success");
+            fetchDocs();
+        } catch (error) {
+            console.error("Failed to upload token mapping Excel", error);
+            let errorMsg = "Failed to apply token replacements from Excel mapping file.";
+            if (error.response?.data?.message) {
+                errorMsg = error.response.data.message;
+            } else if (typeof error.response?.data === "string") {
+                errorMsg = error.response.data;
+            }
+            showToast(errorMsg, "error");
+        } finally {
+            setUploadingTokenMapping(false);
+            if (tokenMappingInputRef.current) tokenMappingInputRef.current.value = "";
+        }
+    };
 
     const handleDownloadTokensExcel = async () => {
         setDownloadingTokens(true);
@@ -32,7 +62,17 @@ function Documents() {
             showToast("Token list report downloaded successfully!", "success");
         } catch (error) {
             console.error("Failed to download token list report", error);
-            showToast(error.response?.data?.message || "Failed to download token report. Ensure Word (.docx) templates are uploaded.", "error");
+            let errorMsg = "Failed to download token report. Ensure Word (.docx) templates are uploaded.";
+            if (error.response?.data instanceof Blob) {
+                try {
+                    const text = await error.response.data.text();
+                    const json = JSON.parse(text);
+                    if (json.message) errorMsg = json.message;
+                } catch (e) {}
+            } else if (error.response?.data?.message) {
+                errorMsg = error.response.data.message;
+            }
+            showToast(errorMsg, "error");
         } finally {
             setDownloadingTokens(false);
         }
@@ -346,7 +386,7 @@ function Documents() {
                                 </h5>
                                 <p className="text-muted mb-0 small">Processed documents ready for Yardi import</p>
                             </div>
-                            <div>
+                            <div className="d-flex flex-wrap align-items-center gap-2">
                                 <button 
                                     type="button" 
                                     onClick={handleDownloadTokensExcel}
@@ -361,6 +401,36 @@ function Documents() {
                                     ) : (
                                         <>
                                             <FaFileExcel size={14} /> Download Token List (Excel)
+                                        </>
+                                    )}
+                                </button>
+
+                                <input 
+                                    type="file" 
+                                    ref={tokenMappingInputRef} 
+                                    className="d-none" 
+                                    accept=".xlsx,.xls,.csv"
+                                    onChange={(e) => {
+                                        if (e.target.files && e.target.files[0]) {
+                                            handleUploadTokenMappingFile(e.target.files[0]);
+                                        }
+                                    }}
+                                />
+
+                                <button 
+                                    type="button" 
+                                    onClick={() => tokenMappingInputRef.current?.click()}
+                                    className="btn btn-primary btn-sm px-3 py-2 fw-semibold d-flex align-items-center gap-2 border-0" 
+                                    style={{ borderRadius: "8px", fontSize: "12px", background: "#6366f1" }}
+                                    disabled={uploadingTokenMapping}
+                                >
+                                    {uploadingTokenMapping ? (
+                                        <>
+                                            <FaSpinner className="animate-spin" /> Replacing Tokens...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <FaCloudUploadAlt size={14} /> Upload Token Mapping (Excel)
                                         </>
                                     )}
                                 </button>

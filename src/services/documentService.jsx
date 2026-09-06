@@ -78,3 +78,13 @@ export const downloadTokensExcel = async () => {
     }, 200);
 };
 
+export const uploadTokenMappingExcel = (file) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    return axios.post(`${BASE_URL}/documents/upload-token-mapping`, formData, {
+        headers: {
+            "Content-Type": "multipart/form-data"
+        }
+    });
+};
+
