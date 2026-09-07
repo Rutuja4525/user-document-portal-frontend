@@ -38,7 +38,7 @@ function Documents() {
         setUploadingTokenMapping(true);
         try {
             const response = await uploadTokenMappingExcel(file);
-            showToast(response.data || "Token mapping applied successfully! Document tokens replaced.", "success");
+            showToast(response.data || "Token replacements completed", "success");
             fetchDocs();
         } catch (error) {
             console.error("Failed to upload token mapping Excel", error);
