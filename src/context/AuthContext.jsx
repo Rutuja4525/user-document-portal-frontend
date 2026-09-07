@@ -24,6 +24,18 @@ axios.interceptors.request.use(
     }
 );
 
+// Setup Axios Response Interceptor for 401 Unauthorized
+axios.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        if (error.response && error.response.status === 401) {
+            console.warn("401 Unauthorized detected. Clearing expired session.");
+            localStorage.removeItem("user");
+        }
+        return Promise.reject(error);
+    }
+);
+
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);

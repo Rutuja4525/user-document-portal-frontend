@@ -59,9 +59,19 @@ function Login() {
         let script = document.getElementById(scriptId);
 
         const initGoogleButton = () => {
+            const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+            if (!clientId || clientId.includes("placeholder")) {
+                console.warn("Google Client ID is missing or using placeholder in .env");
+                const btnContainer = document.getElementById("google-signin-btn");
+                if (btnContainer) {
+                    btnContainer.innerHTML = '<div class="text-center text-muted small py-2">Google Sign-In is not configured. Please set VITE_GOOGLE_CLIENT_ID in .env</div>';
+                }
+                return;
+            }
+
             if (window.google) {
                 window.google.accounts.id.initialize({
-                    client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID || "1023773177708-placeholder.apps.googleusercontent.com",
+                    client_id: clientId,
                     callback: handleGoogleCallback,
                     cancel_on_tap_outside: false,
                 });
